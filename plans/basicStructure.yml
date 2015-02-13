@@ -1,0 +1,250 @@
+---
+entity:
+  has id:
+  - for def-file (global id)
+  - for actions (aliases, global, ...)
+  - possibly other
+  - actions mostly access through properties on other entities
+  - not stored inside entity
+  - not necessarily known by entity
+  special entities:
+    int: #holds int value
+    - "defint <name> [<defVal>=0]"
+    - cannot have instances with different values? ... no - Bad?
+    - can be created dynamically ... but essentially global vars...
+    # dbl: holds double value; possibly other stuff like this
+    text: 
+    - immutable
+    - different possible localizations (loads different sub files; not all at once)
+    - holds text string
+    - can be defined as multiline in def-file
+    
+    dict: 
+    - string: entity
+    - normal entity with dynamic properties (JS object like (no prototype, ...))
+    action:
+    - modifies game state (user input, event,...)
+    - returns view
+    view:
+    - transforms game state to string (to print)
+    set:
+    - probably needed for stuff like inventory...
+    - could be named 'bag' or something...
+
+entity store:
+- big map<global__entity_id, entity>
+- global__entity_id: is string
+- all entities are stored in that
+- provides "entity handles": (probably just pointers to entities)
+- handles are for dicts
+- provides 'deref' function (handle / id) -> entity&  //references only
+- ... kind of silly to get a reference upon dereferencing but... yeah
+- aliases:
+  - ways to access entities (especially from actions)
+  - "points to map::iterator (not handle) - to be able to get global_id"
+  
+entity_id:
+- just any string (name)
+- cannot be saved/loaded if contains '#'
+- cannot contain whitespace + comma (is considered whitespace too...) + '^' + '.'
+- specializations: # starts with -- mainly just logical; not enforced... (probably not possible)
+  '@': localizable strings (deftext)
+  '#': ... no
+  '$': 
+  - prenamed; $welcome{shown at start}, $death, $player ...
+  - some will exist even before
+  - and '$$' is considered valid dummy (like ''t in lisp) -- for ?tags to see if they are present
+  '%': not meant for global ids;; orientation, otherwise special {%south, %north, %up, ...}
+  '&': predefined associated texts (in properties, mainly)
+  '*': 'events'
+  '~': transient / dynamicly created ... (shouldn't be defined manually in def-file; can by in saved files...)
+  '?': tag entities (enums, etc.) to query in actions etc.
+  ':': ...    # (keywords... lol)
+  '^': queries i.e.: for replacing in text in views (not really a part of a name)
+  '.': not part of id; such ids are considered relative;( whatever it means in given context); 'not global_ids'
+  '|': ... (functions)
+  '\': 
+  - like: '^$player.health\int'
+  - used in queries to determine type (if I imlpement queries ... would be cool)
+  '/': views
+  '`': ... #(alive / smart entities? / something advanced probably...)
+  '-': ...
+  '+': ...
+  '!': ...
+  ...: are reserved
+
+  
+game objects:
+- normal entities
+- player:
+  - probably normal dict
+  - location: entity (area)
+  - life: entity (int)
+  - ...
+
+needs:
+- location specific aliases
+  - 'box' could mean different boxes in different areas / contexts...
+- done; relation (property) specific texts:
+  - can have different text depending from where it is referenced...
+  - ok: solved with location transitions - not needed anywhere else
+  
+area:
+- transition objects:
+  - has data about:
+    - text "what is there"
+    - text "actually moving there"
+    - pointer to where to go
+    - conditions: [locked, something, ...]
+  - do I need 'from where it is'?:
+    - well, why not...
+    - it''s better to have more info then less...
+  - properties:
+    - '%to'
+    - '%from'
+    - '&look'
+    - '&go'
+- view:
+  - each area can 'override' default 'look around' view
+  - default: 
+    - prints what is around (south, up, ...)
+    - lists visible items (descriptions) in room
+- area properties:
+  - what is around: optional; '%south' ... 
+  - items: #entities
+    - should have some positioning...
+    - or just in text ...
+    - player can interact with
+  - events
+  - views ?? (only whole room; rest is dependent on stuff...)
+    
+
+implementation:
+- entity interface:
+  - has methods of character:
+    - as int
+    - as object
+    - as area
+    - as ...
+  - each will return "null" if it is not possible:
+    - or something (default) that overrides bool operator to false : to not work in ifs (could be safer)
+    - I like idea of bool operator
+  - or (pointer/)reference to it (it will always implement this interface, though)
+  - then I can work with it how I see fit
+  - used like so: |
+     if(auto& plo = player.as_obj())
+     if(auto& health = plo["health"].as_int()){ ... }
+
+  - with shortcuts like:
+    - default "interface" has operator[] and can try to cast to obj or return dummy... etc.
+    - op[] will essentially return dummy by default on "not found" (should be possible to differenciate ...)
+    
+  - where will be entities allocated?:
+    - only once in some common place
+    - otherwise just references
+    - ok: store
+    
+action: 
+- takes:
+  - source: entity
+  - cause: ??? (maybe) (def-file, event, user, ...)
+  - main object
+  - list of other arguments
+- returns:
+  - view - but can change entities (model) directly
+- defaults:
+  - there are default actions parametrizable with ids )strings) to work on
+  - like:
+    - break ...
+    - change entity into other (in some property of a dict...)
+    - pick
+- all has some kind of conditions ...
+
+- events: 
+  - actions can be triggered by events, like:
+    - entering area
+    - picking thing 
+    - ...
+  - some filters / subscriptions (to call actions)
+
+view:
+- functor(player entity):string
+
+
+MVC:
+- model:
+  - essentially all entities (or more like; data entities...)
+  - accessed mainly through player entity
+  - can be loaded/stored to/from a file
+- view:
+  - .. 'functor' returned by view (or default, or nothing (for background events...))
+- controller:
+  - user inputs a line
+  - gets parsed
+  - creates 'action'
+  
+  - (that gets player etc. which changes)
+  - (then returns view)
+  
+
+def-file: 
+- way to save the world
+- can be loaded
+- that''s how levels are written
+- lines are:
+  - .. '#' means comment : anywhere in line
+  - .. ',' is considered whitespace
+  - <command> <id> other args
+  - or stuff inside multiline commands delimited with:
+    - 2 newlines ?
+    - special keyword? (like; ".end" and nothing else on line...)
+    - something better?  ('.multi', '.endm')
+    - for long texts
+- commands:
+  def:
+  - "def <name:id>"
+  - creates empty dict
+  set: # (original name: set)
+  - "assoc <dict> <proerty:str> <value:id>"
+  - associates member
+  def:
+  - combines def and assoc; intitializes with multiple sets
+  - "def <name:id>  <prop1:str> <value1:id>  <prop2:str> <val2:id> ..."
+  defint: 
+  - "defint <name:id> [<value>=0]"
+  
+parsing:
+- applies to both: user commands and def-file
+- .multi:
+  - method to create multiline commands.
+  - if line starts with "command" (macro?) .multi:
+    - all following lines are joined with \n and 
+  - following lines are read exactly: comments are not special
+  - ???: provide variant that would remove comments
+
+  
+global (predefined/required) entities:
+- all start with '$'
+- player
+- $$ (true dummy)
+
+
+
+query:
+- ids that start with '^'
+- instead of looking up just ids, look up queris like "^$player.area.%south.%to"
+- additional ...\<type> for view templates (possinly... / or virtual to_string or ...)
+- not completely easy, so it''s only a idea, but if it turns out to be ~simple...
+- relative queries: "^.object.this.that"
+- not sure how relative queris would work, but I bet they would be needed somewhere...
+- I still need this whole concept (context)
+
+
+  
+  
+  
+  
+  
+  
+  
+  

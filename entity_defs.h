@@ -1,0 +1,280 @@
+/* 
+ * File:   entity_defs.h
+ * Author: maartyl
+ *
+ * Created on February 6, 2015, 1:25 AM
+ */
+
+#ifndef ENTITY_DEFS_H
+#define	ENTITY_DEFS_H
+
+#include <string>
+#include <map>
+#include <set>
+#include <stdexcept>
+#include <vector>
+#include <functional>
+
+#include "entity.h"
+#include "store.h"
+
+class dict : public virtual entity {
+  std::map<std::string, store::handle> dict_{};
+public:
+  //  ///syntax helper for chaining
+  //  entity& operator[](const std::string& name);
+  
+  ///getter of actual handle
+  store::handle at(const std::string& name);
+  //also updates
+  void assoc(std::string name, store::handle entity) {
+    if (store::deref(entity).is_nil())
+      throw std::invalid_argument("€dict: cannot hold NIL entity for name: " + name);
+    dict_[name] = entity;
+  }
+  //removes all
+public:
+  void flush() {
+    std::map<std::string, store::handle> dict;
+    std::swap(dict, dict_);
+  }
+
+public: //entity override:
+  virtual dict& as_dict() {
+    return *this;
+  }
+};
+
+class entity_int : public virtual entity {
+  int value_;
+public:
+  entity_int() : value_(0) { }
+  entity_int(int value) : value_(value) { } //implicit conversion: ok
+
+  int value() const {
+    return value_;
+  }
+  
+  operator int() const {
+    return value();
+  }
+public: //operators 
+  entity_int& operator=(int val) {
+    value_ = val;
+    return *this;
+  }
+  entity_int& operator+=(int val) {
+    value_ += val;
+    return *this;
+  }
+  entity_int& operator-=(int val) {
+    value_ -= val;
+    return *this;
+  }
+  entity_int operator++(int val) {
+    int orig = value_;
+    value_ += val ? val : 1; //just ++: val == 0
+    return entity_int(orig);
+  }
+  entity_int& operator++() {
+    ++value_;
+    return *this;
+  }
+  entity_int operator--(int val) {
+    int orig = value_;
+    value_ -= val ? val : 1; //just --: val == 0
+    return entity_int(orig);
+  }
+  entity_int& operator--() {
+    --value_;
+    return *this;
+  }
+
+public: //entity override:
+  virtual eint& as_int() {
+    return *this;
+  }
+};
+
+class text : public virtual entity {
+  std::string text_;
+public:
+  text(const std::string& text) : text_(text) { }
+  const std::string& value() const {
+    return text_;
+  }
+  operator const std::string&()const {
+    return value();
+  }
+protected:
+  text() : text_() { }
+
+public: //entity override:
+  virtual text& as_text() {
+    return *this;
+  }
+};
+
+//can return text representation of game state (player)
+///not abstract! - parametrized with the function
+///wrapper around std::function<string(e subject, e object)>
+
+class view : public virtual entity {
+public:
+  typedef std::function<std::string(entity const&, entity const&)> functor;
+private:
+  std::function<std::string(entity const&, entity const&)> fn;
+  static std::string default_impl(entity const& subject, entity const& object) {
+    return "";
+  }
+
+public:
+  view(functor const& fn) : fn(fn) { }
+  view() : fn(default_impl) { }
+  explicit view(std::function<std::string(entity const&)> const& fn) : view([&](entity const& subject, entity const& object) {
+    return fn(subject);
+  }) { }
+  view(std::function<std::string() > const& fn) : view([&](entity const& subject, entity const& object) {
+    return fn();
+  }) { }
+
+public: //"interface"
+  ///transforms game state into string to show to user/player.
+  ///expected to get overridden
+  std::string print(entity const& subject, entity const& object) const {
+    return fn(subject, object); //views that return "" are to be ignored completely
+  }
+  ///implicit subject: $player
+  std::string print(entity const& object) const {
+    return print(store::deref("$player"), object);
+  };
+  ///no object; so both implicit: $player
+  std::string print()const {
+    REF p = store::deref("$player");
+    return print(p, p);
+  };
+public: //entity override
+  virtual view& as_view() {
+    return *this;
+  }
+};
+
+//just view that returns given text
+
+class textview : public text {
+  view v;
+public:
+  textview(const std::string& txt) : text(txt), v(*this) { }
+  std::string operator()() {
+    return value();
+  }
+public: //entity override
+  virtual view& as_view() {
+    return v;
+  }
+};
+
+//can change state;
+//abstract: there will be actions like: change property of dict to ...; pick, drop, break, open... - events
+
+class action : public virtual entity {
+public:
+  using arg_coll = std::vector<store::handle>;
+  using ret_t = entity::handle;
+  //is ret meaningful? ... : shared_ptr != NULL
+
+  //returns view in ret / or data for events...
+  //main invoke to override
+  virtual ret_t invoke(entity& player, entity const& cause, arg_coll const& args) const = 0;
+  //  {
+  //    throw std::logic_error("action:invoke: not overridden");
+  //  }
+  ret_t invoke(entity const& cause, arg_coll const& args) const {
+    return invoke(store::deref("$player"), cause, args);
+  }
+  ret_t invoke(entity const& cause, store::handle arg1)const {
+    return invoke(store::deref("$player"), cause, { arg1 });
+  }
+  ret_t invoke(entity const& cause) const {
+    return invoke(store::deref("$player"), cause, { });
+  }
+  virtual ret_t invoke_event(entity& player, arg_coll const& args) const {
+    return invoke(player, store::deref("?event"), args);
+  }
+  ret_t invoke_event(entity& player) const {
+    return invoke_event(player, arg_coll{});
+  }
+  ret_t invoke_event(entity& player, store::handle arg)const {
+    return invoke_event(player, arg_coll{arg});
+  }
+  ret_t invoke_event(entity& player, store::handle arg1, store::handle arg2) const {
+    return invoke_event(player,{arg1, arg2});
+  }
+public:
+  static const ret_t nil_ret;
+
+public: //entity override
+  virtual action& as_action() {
+    return *this;
+  }
+};
+
+class bag : public virtual entity,
+public std::set<store::handle> {
+
+public: //entity override
+  virtual bag& as_bag() {
+    return *this;
+  }
+};
+
+class action_bag : public action, public bag {
+  //returns last non-nil ret_t or nil
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    action::ret_t ret;
+    for (REF e : (*this))
+      if (REF a = e->as_action())
+        if (auto rt = a.invoke(player, cause, args))
+          ret = rt;
+    return ret;
+  }
+  virtual action::ret_t invoke_event(entity& player, arg_coll const& args) const {
+    action::ret_t ret;
+    for (REF e : (*this))
+      if (REF a = e->as_action())
+        if (auto rt = a.invoke_event(player, args))
+          ret = rt;
+    return ret;
+ }
+};
+
+
+#include <limits>
+class nil_entity :
+public dict,
+public entity_int,
+public text,
+public view,
+public action,
+public bag {
+  static nil_entity NILVAL;
+  nil_entity() : entity_int(std::numeric_limits<int>::min()) { }
+public:
+  static nil_entity& get() {
+    return NILVAL;
+  }
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    return action::nil_ret;
+  }
+
+
+  
+public:
+  virtual bool is_nil() const {
+    return true;
+  }
+};
+
+
+#endif	/* ENTITY_DEFS_H */
+

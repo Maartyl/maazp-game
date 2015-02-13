@@ -1,0 +1,67 @@
+def foo #just first test; builds dict
+defint player_health 100
+
+set foo proerty_name player_health
+
+deftext hello This is the actuall text that is going to be shown.
+deftext cmntd This is stored text # comment, not part of string; requires .multi
+
+.multi deftext story #there is no added newline here, this comment is still valid comment
+Long time ago, where there has been no computers or facebook, there has lived a king in a forgotten kingdom.
+That king had a daugter and she was very mishievous.
+
+... (I can use hashes hre freely. ################################### not conidered comment)
+
+And only the princess managed to live happily ever after... or at least for a few months...
+.endm #this also doesn't add a newline
+
+#how multi works:
+# essentially just joins the following lines and makes 1 command string: 
+# deftext <name> all \n the \n lines \n joined with newlines.
+# normal \n are not escaped: just \n like \O/ won't do anything weird...        
+
+set foo $show hello
+set foo story story
+set foo ?happy $$
+
+#defset / deflink idea:
+# ... a bit hard to read I guess...
+# could be good for small objects; I will do it if it will be easy to implement...
+defset foo  $show hello  story story  ?happy $$
+
+#with multi:
+.multi defset foo
+$show hello
+story strory
+?happy $$
+.endm
+
+#could work even with just set:
+set id p1 v1 p2 v2 p3 v3 ...
+
+
+#alias: (bar{foo})
+alias bar foo
+
+#places
+## holds only reference to text nodes; no text nodes defined here
+
+#transitions
+
+#actions
+
+
+
+
+#root:
+## not necessarily but...
+## main file has no definitions, only includes:
+## these are looked for in the same directory
+## works essentially like C includes...
+
+# lvl0.mzp
+include lvl0.cz.text
+include lvl0_1.places
+include lvl0_2.places
+include lvl0.actions
+include anything_really
