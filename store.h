@@ -14,15 +14,17 @@
 
 
 #include "entity.h"
+#include "parser.h"
 //#include "entity_defs.h" !!! auto declared here: breaks stuff
 
 //entity store 'singleton' ...
 //well, it's not really a singleton, but from the design of the application, I don't think it's too bad...
 //no concurrency, only little bit of modifications...; no one is gonna run 2 games simultaneously...
-//API logic: if store weren't global, each entity would have to reference it and thus, it wouldn't change the way it works...
+//Normal object would be better but then it could not be referenced from anywhere... (Clojure var binding would be perfect, but...)
+//if necessary: would get implemented in bindings manner
 class store {
 public:
-  typedef entity::handle handle; //only this should be used in APIs. ~Always dereference...
+  typedef entity::handle handle; //~only this should be used in APIs. ~Always dereference...
   typedef std::string id; //global id (used in settings file ...)
 
 private:
@@ -80,6 +82,29 @@ public: //access
     }
     throw std::invalid_argument("€store[id_of]: invalid handle");
   }
+  static entity& query(std::string const& qry, entity& origin, const bool nil_on_fail = false) {
+    if (qry[0] != '^')
+      if (nil_on_fail) return deref("", true);
+      else throw std::logic_error("invalid query: " + qry);
+    if (origin && qry[1] != '.')
+      if (nil_on_fail) return deref("", true);
+      else throw std::logic_error("invalid relative query: " + qry);
+    //TODO: possibly full correctness check
+
+    CREF q = parser::words(parser::triml(qry, "^"), "."); //query parts
+    auto it = std::begin(q);
+    //ptr to be able to change it
+    entity* e = &(origin ? origin : deref(*it, nil_on_fail)); //current entity ptr; origin || deref first
+    if (origin) e = &(*e)[*it]; //in case of relative query: first argument is property too
+    while (*e && (++it != std::end(q))) //for q, but first; stop for nil entity
+      e = &(*e)[*it]; //update: ptr of reference from dict at [current property from q]
+
+    if (!nil_on_fail && !*e) //is nil: throw instead of returning ;; virtual second
+      throw std::logic_error("query failed at: " + *it + " of: " + qry);
+
+    return *e;
+  }
+  static entity& query(std::string const& qry, const bool nil_on_fail = false);
 
 
 

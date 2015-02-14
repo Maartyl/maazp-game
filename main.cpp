@@ -84,7 +84,7 @@ yah miko
           This a cool story about a mouse named lorry.
 Stuff...
 I don't KNOW!!!!
-          Slaughter!!!!!.....
+          Flowers.....
           .endm # ain't this cool?
 
 .multi .multi yo
@@ -100,6 +100,11 @@ I don't KNOW!!!!
   p.process(ss);
 
   if (REF d = store::deref("rampa")["q"]["b"].as_int())
+    prn("roo is " << d.value());
+  else
+    std::cout << "roo is not" << std::endl;
+
+  if (REF d = store::query("^rampa.q.b").as_int())
     prn("roo is " << d.value());
   else
     std::cout << "roo is not" << std::endl;

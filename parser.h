@@ -109,14 +109,15 @@ public: //line helpers
   }
   //left-trims rest too... too weird without it, but possibly...
   //originally for parsing deftext; but well, cannot start with whitespace...
-  static std::pair<std::string, std::string> first_and_rest(std::string const& line_) {
-    auto&& line = triml(line_);
+  static std::pair<std::string, std::string> first_and_rest(std::string const& line_, const char* delims = delims) {
+    auto&& line = triml(line_, delims);
     auto ws0 = line.find_first_of(delims);
     if (ws0 == std::string::npos) return {
       line, ""
     };
-    return {
-      line.substr(0, ws0), triml(line.substr(ws0))
+    return
+    {
+      line.substr(0, ws0), triml(line.substr(ws0), delims)
     };
   }
   static std::string remove_comment(std::string const& str) {
@@ -126,28 +127,28 @@ public: //line helpers
     //find->npos is treated correctly
     str.substr(0, str.find('#')).swap(str);
   }
-  static std::string triml(std::string const& str) {
+  static std::string triml(std::string const& str, const char* delims = delims) {
     auto startpos = str.find_first_not_of(delims);
     if (startpos != std::string::npos)
       return str.substr(startpos);
     else return ""; //nothing else found: trimmed to nothing
   }
-  static std::string trimr(std::string const& str) {
+  static std::string trimr(std::string const& str, const char* delims = delims) {
     auto endpos = str.find_last_not_of(delims);
     if (endpos != std::string::npos)
       return str.substr(0, endpos + 1);
     else return ""; //nothing else found: trimmed to nothing
   }
-  static std::string trim(std::string const& str) {
-    return trimr(triml(str));
+  static std::string trim(std::string const& str, const char* delims = delims) {
+    return trimr(triml(str, delims), delims);
   }
-  static str_vec words(std::string const& str) {
+  static str_vec words(std::string const& str, const char* delims = delims) {
     //very slow, very ugly... but for now, I guess fine...
 
     std::vector<std::string> v;
-    for (auto p = first_and_rest(str);
+    for (auto p = first_and_rest(str, delims);
          p.first.size() != 0;
-         p = first_and_rest(std::move(p.second))) {
+         p = first_and_rest(std::move(p.second), delims)) {
       v.push_back(std::move(p.first));
     }
     return v;

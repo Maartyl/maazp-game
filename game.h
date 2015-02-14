@@ -8,7 +8,7 @@
 #ifndef GAME_H
 #define	GAME_H
 
-//main game loop:
+//main game loop
 //handles loading games ... interaction
 //menus ...
 class game {
