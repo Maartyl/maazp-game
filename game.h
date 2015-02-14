@@ -13,6 +13,16 @@
 //menus ...
 class game {
 public:
+  /*
+   * what should it do:
+   * menu
+   * - open "menu game"
+   * - player can choose what level / world / game to play
+   * - then ends, loads the given file and starts that
+   *
+   * both can share REPL
+
+   */
 
 private:
 

@@ -55,15 +55,17 @@ public:
     std::vector<store::handle> hv;
     hv.reserve(p.size());
     for (CREF w : p) hv.push_back(store::handle_of(w));
-    
-    if (auto ret = a_->invoke(store::deref(cause_h_), hv)) {
-      //use ret:
-      if (REF d = ret->as_dict()) prn("is dict");
-      if (REF i = ret->as_int()) prn("is int");
+
+    if (REF ret = store::deref(a_->invoke(store::deref(cause_h_), hv)).as_view()) {
+      prn(ret.print());
+      if (ret.valid) {
+        REF p = store::deref("$player");
+        p["*action"].trigger(p);
+        p["area"]["*action"].trigger(p);
+      }
     } else {
-      prn("no result");
+      throw std::logic_error("action_cmd: Outmost action didn't return view.");
     }
-    
   }
 };
 

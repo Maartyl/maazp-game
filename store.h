@@ -125,7 +125,7 @@ public: //inserting
   }
   template<typename TE, typename... Args>
   static store::handle emplace(store::id const& id, Args&&... args) {
-    return insert(id, std::make_shared<TE>(std::forward<Args>(args)...)); //new: requires polymorphism
+    return insert(id, transient<TE>(std::forward<Args>(args)...)); //new: requires polymorphism
   }
   //alias
   static void add_alias(store::id const& alias, store::id const& existing_id) {
@@ -168,6 +168,17 @@ public: //initialization
     init_();
     initialized = true;
   }
+
+public: //misc
+  template<typename T, typename... Args>
+  static handle transient(Args... args) {
+    return std::make_shared<T>(std::forward<Args>(args)...);
+  }
+  //  static handle transient_of(entity&& e) { //consumes given rvalue :: moves to heap and deletes as necessary (shared ptr)
+  //    return handle(e); //not sure how to do that ... only implement if needed
+  //  }
+
+
 private:
   static void init_();
   static void flush_dicts(store& s);

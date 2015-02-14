@@ -116,40 +116,22 @@ public: //entity override:
 };
 
 //can return text representation of game state (player)
-///not abstract! - parametrized with the function
-///wrapper around std::function<string(e subject, e object)>
-
 class view : public virtual entity {
 public:
-  typedef std::function<std::string(entity const&, entity const&)> functor;
-private:
-  std::function<std::string(entity const&, entity const&)> fn;
-  static std::string default_impl(entity const& subject, entity const& object) {
-    return "";
-  }
-
-public:
-  view(functor const& fn) : fn(fn) { }
-  view() : fn(default_impl) { }
-  explicit view(std::function<std::string(entity const&)> const& fn) : view([&](entity const& subject, entity const& object) {
-    return fn(subject);
-  }) { }
-  view(std::function<std::string() > const& fn) : view([&](entity const& subject, entity const& object) {
-    return fn();
-  }) { }
+  bool valid{true}; //is this not a view of an invalid action? (open nonexistent door, ...)
+  view() { }
+  view(bool valid) : valid(valid) { }
 
 public: //"interface"
   ///transforms game state into string to show to user/player.
   ///expected to get overridden
-  std::string print(entity const& subject, entity const& object) const {
-    return fn(subject, object); //views that return "" are to be ignored completely
-  }
+  virtual std::string print(entity const& subject, entity const& object) const = 0;
   ///implicit subject: $player
   std::string print(entity const& object) const {
     return print(store::deref("$player"), object);
   };
   ///no object; so both implicit: $player
-  std::string print()const {
+  std::string print() const {
     REF p = store::deref("$player");
     return print(p, p);
   };
@@ -160,17 +142,12 @@ public: //entity override
 };
 
 //just view that returns given text
-
-class textview : public text {
-  view v;
+class textview : public text, public view {
 public:
-  textview(const std::string& txt) : text(txt), v(*this) { }
-  std::string operator()() {
-    return value();
-  }
-public: //entity override
-  virtual view& as_view() {
-    return v;
+  textview(const std::string& txt) : text(txt) { }
+  textview(const std::string& txt, bool valid) : text(txt), view(valid) { }
+  virtual std::string print(const entity& subject, const entity& object) const {
+    return text::value();
   }
 };
 
@@ -266,7 +243,9 @@ public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
     return action::nil_ret;
   }
-
+  virtual std::string print(const entity& subject, const entity& object) const {
+    return "";
+  }
 
   
 public:
