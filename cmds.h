@@ -56,7 +56,8 @@ public:
     hv.reserve(p.size());
     for (CREF w : p) hv.push_back(store::handle_of(w));
 
-    if (REF ret = store::deref(a_->invoke(store::deref(cause_h_), hv)).as_view()) {
+    if (CREF reth = a_->invoke(store::deref(cause_h_), hv))
+      if (REF ret = store::deref(reth).as_view()) {
       prn(ret.print());
       if (ret.valid) {
         REF p = store::deref("$player");

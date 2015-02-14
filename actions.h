@@ -59,7 +59,8 @@ public:
 class test_set_ret : public action {
 public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
-    return store::transient<textview>("hello from test action ^^");
+    return store::transient<textview>("hello from test action; transient");
+    //return store::emplace<textview>("tvTEST", "hello from test action; not transient");
   }
 };
 

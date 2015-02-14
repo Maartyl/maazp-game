@@ -29,10 +29,7 @@ public:
 
 private:
   typedef std::unordered_map<store::id, handle>::iterator map_iter;
-  store() { } //private .ctor: singleton
-  //  static handle create_handle(entity* obj) {
-  //    return obj;
-  //  }
+  store() { } //private .ctor: ~singleton
   static map_iter iter_of(store::id const& id) {
     auto it = find(id);
     if (it != end())
@@ -112,7 +109,7 @@ public: //access
 public: //inserting 
   static store::handle insert(std::string const& id, handle entity) {
     if (entity->is_nil())
-      throw std::invalid_argument("€store: cannot hold NIL entity for id: " + id);
+      throw std::invalid_argument("€store: cannot hold NIL entity; for id: " + id);
 
     auto itp = VAL.entities_.emplace(id, entity);
     if (!itp.second)
@@ -121,11 +118,12 @@ public: //inserting
     auto it = itp.first;
     VAL.iters_.emplace(it->second, it); //no need to check for present again: both inserted only here
 
+    //prn((entity == it->second));
     return it->second;
   }
   template<typename TE, typename... Args>
   static store::handle emplace(store::id const& id, Args&&... args) {
-    return insert(id, transient<TE>(std::forward<Args>(args)...)); //new: requires polymorphism
+    return insert(id, transient<TE>(std::forward<Args>(args)...)); //requires polymorphism
   }
   //alias
   static void add_alias(store::id const& alias, store::id const& existing_id) {
@@ -141,8 +139,9 @@ public: //inserting
 
 public: //removal
   //some flush, that would delete everything: ok
-  //deleting individual items... - someone could still hold reference -- shared pointer sort of solves... but... and still ugly...
+  //deleting individual items... - someone could still hold reference -- shared pointer sort of solves... but references...
   // but possibly... but slow: searching the whole store for references in dicts and only allow if none holds it
+  // - still problem with cyclic references ... ? (could flush deleted dicts...)
   // making handles shared pointers should make this easier
 
   ///removes everything from store
@@ -165,19 +164,19 @@ public: //initialization
   static void init() {
     static bool initialized = false;
     if (initialized) return;
-    init_();
+    flush();
     initialized = true;
+
+    /*why flush and not init_? if: flush called first: already initialized,
+     *  then init still can be called 2nd time. */
   }
 
 public: //misc
+  //dangerous: can deallocate entity while still in use; only pointer is no longer referenced
   template<typename T, typename... Args>
   static handle transient(Args... args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
   }
-  //  static handle transient_of(entity&& e) { //consumes given rvalue :: moves to heap and deletes as necessary (shared ptr)
-  //    return handle(e); //not sure how to do that ... only implement if needed
-  //  }
-
 
 private:
   static void init_();
