@@ -27,12 +27,27 @@
  * .multi 'command' allows joining lines and includes \n in texts.
  *
  * Works with both: user input and def-files. Only will be initialized with different commands.
- * (possibly?) -> Yes, player can use .multi . Only it will be probably useles...
+ * (possibly?) -> Yes, player can use .multi . Only it will be probably useless...
  *
  * yes, processing is stateful and changes whatever somewhere... (known from cmds; otherwise would do nothing...)
  *
+ * //helpers
  * // _m method suffix means: mutates argument
- * // originally there were more, but they *are* ugly.
+ * // originally there were more, but they *are* ugly...
+ *
+ * also takes optional commands: //no real cmd can contain #, so these are safe to use
+ * #pre
+ * #post
+ * - run before and after every command
+ * - have access to raw line (without comments), but cannot change it
+ * - post is not called if error occurs
+ * - can throw, which would be caught by #err-logic / #err-runtime
+ * #err-logic
+ * #err-runtime
+ * - called on error
+ * - takes "<line_num>\n<e.what()>" //no err message should start with bunch of meaningful newlines...
+ * #empty-line
+ * - called on encountering an empty line (only whitespace / comment)
 
  */
 class parser {
@@ -45,6 +60,22 @@ public:
 
 public: //process istream
   void process(std::istream & is) {
+    //when change: 'auto' to 'CREF' - all calls err-runtime ... no idea why(; so they are copies, who cares...)
+    auto ignore = [](std::string const&) {};
+    auto pre = fn_or_default("#pre", ignore);
+    auto post = fn_or_default("#post", ignore);
+    auto empty_ln = fn_or_default("#empty-line", ignore);
+
+    auto err_logic = fn_or_default("#err-logic", [](std::string const& args) {
+      auto p = first_and_rest(args, "\n");
+      errprn("[ln:" << p.first << "]input logic error: " << p.second);
+    });
+    auto err_runtime = fn_or_default("#err-runtime", [](std::string const& args) {
+      auto p = first_and_rest(args, "\n");
+      errprn("[ln:" << p.first << "]input runtime error: " << p.second);
+    });
+
+
     std::string line;
     size_t line_num = 0;
     while (std::getline(is, line)) {
@@ -58,21 +89,25 @@ public: //process istream
         lp = cmd_and_rest(p.second);
       }
 
-      if (lp.first.size() == 0) //empty line / only comment
+      if (lp.first.size() == 0) { //empty line / only comment
+        empty_ln(line);
         continue;
-
+      }
+      
       try {
+        pre(line);
         process_line(lp.first, lp.second);
+        post(line);
       } catch (std::logic_error& e) {
-        errprn("[ln:" << line_num << "]input logic error: " << e.what());
+        err_logic(std::to_string(line_num) + "\n" += e.what());
       } catch (std::runtime_error& e) {
-        errprn("[ln:" << line_num << "]input runtime error: " << e.what());
+        err_runtime(std::to_string(line_num) + "\n" += e.what());
       }
     }
   }
 
 private: //handle multiline strings
-  ///raeds until .endm
+  ///reads until .endm
   ///-> {number of lines read, lines concatenated}
   ///include_comments: if true, doesn't remove comments; keeps lines intact
   std::pair<size_t, std::string> compose_multiline(std::string const& start, std::istream & is, const bool include_comments = true) {
@@ -91,14 +126,16 @@ private: //handle multiline strings
   }
 private: // process line
   void process_line(std::string const& cmd, std::string const& args) {
+    fn_or_default(cmd, [&](std::string const&) {
+      throw std::logic_error("no such command: " + cmd);
+    })(args);
+  }
+  cmdfn const& fn_or_default(std::string const& cmd, cmdfn const& dflt) {
     auto cmdit = cmds_.find(cmd);
     if (cmdit == std::end(cmds_))
-      throw std::logic_error("no such command: " + cmd);
-
-    cmdit->second(args); //actually invoke command
+      return dflt;
+    return cmdit->second;
  }
-
-
 
 
 public: //line helpers

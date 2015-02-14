@@ -94,7 +94,7 @@ I don't KNOW!!!!
     some
        more stuff
   .endm
-          
+         errcmd
           )xxx";
 
   std::stringstream ss(ps);

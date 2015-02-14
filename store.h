@@ -143,6 +143,7 @@ public: //removal
   // but possibly... but slow: searching the whole store for references in dicts and only allow if none holds it
   // - still problem with cyclic references ... ? (could flush deleted dicts...)
   // making handles shared pointers should make this easier
+  //SOLUTION: delete only adds the operation to queue; queue processed in some safe moment (game loop end / ...)
 
   ///removes everything from store
   static void flush() {

@@ -141,7 +141,7 @@ public: //entity override
   }
 };
 
-//just view that returns given text
+//just view that returns associated text
 class textview : public text, public view {
 public:
   textview(const std::string& txt) : text(txt) { }
@@ -205,6 +205,8 @@ public: //entity override
   }
 };
 
+//for events; expected to contain 1 action that returns non-nil
+//not meant for composing actions
 class action_bag : public action, public bag {
   //returns last non-nil ret_t or nil
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
