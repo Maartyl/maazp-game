@@ -19,6 +19,7 @@
 #include "cmds.h"
 #include "loading_cmds.h"
 #include "actions.h"
+#include "player_cmds.h"
 
 //#define prn(cnt) std::cout << cnt << std::endl
 /*
@@ -115,8 +116,9 @@ I don't KNOW!!!!
     std::cout << "t is not" << std::endl;
 
   prn("action start");
-  action_cmd ac(make_unique<test_set_ret>());
+  action_cmd ac(player_fns::consume_action, make_unique<test_set_ret>());
   ac("");
+  ac("roo");
   prn("action end");
   
   return 0;

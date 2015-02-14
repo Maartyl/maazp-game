@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>actions.h</itemPath>
       <itemPath>cmds.h</itemPath>
+      <itemPath>end_game.h</itemPath>
       <itemPath>entity.h</itemPath>
       <itemPath>entity_defs.h</itemPath>
       <itemPath>game.h</itemPath>
@@ -65,6 +66,8 @@
       <item path="cmds.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="cmds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="end_game.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="entity.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -126,6 +129,8 @@
       <item path="cmds.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="cmds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="end_game.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="entity.cpp" ex="false" tool="1" flavor2="0">
       </item>

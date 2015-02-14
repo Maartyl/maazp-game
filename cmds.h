@@ -41,14 +41,22 @@ private:
   with_id_fn fn;
 };
 
-//simple application
+//application of action
 
 class action_cmd {
+public:
+  using consumer_t = std::function<void(const action::ret_t) >;
+private:
   std::unique_ptr<action> a_;
   store::handle cause_h_;
+  consumer_t consumer;
 public:
-  action_cmd(store::handle cause, std::unique_ptr<action> a) : a_(std::move(a)), cause_h_(std::move(cause)) { }
-  action_cmd(std::unique_ptr<action> a) : action_cmd(store::handle_of("?player"), std::move(a)) { }
+  action_cmd(consumer_t cr, store::handle cause, std::unique_ptr<action> a)
+  : a_(std::move(a)), cause_h_(std::move(cause)), consumer(cr) { }
+  //cause: ?player
+  action_cmd(consumer_t cr, std::unique_ptr<action> a) : action_cmd(cr, store::handle_of("?player"), std::move(a)) { }
+  //ignore result; cause: ?player
+  action_cmd(std::unique_ptr<action> a) : action_cmd(default_consumer, std::move(a)) { }
   void operator()(std::string const& line) {
     auto p = parser::words(line);
     
@@ -56,18 +64,10 @@ public:
     hv.reserve(p.size());
     for (CREF w : p) hv.push_back(store::handle_of(w));
 
-    if (CREF reth = a_->invoke(store::deref(cause_h_), hv))
-      if (REF ret = store::deref(reth).as_view()) {
-      prn(ret.print());
-      if (ret.valid) {
-        REF p = store::deref("$player");
-        p["*action"].trigger(p);
-        p["area"]["*action"].trigger(p);
-      }
-    } else {
-      throw std::logic_error("action_cmd: Outmost action didn't return view.");
-    }
+    consumer(a_->invoke(store::deref(cause_h_), hv));
   }
+private:
+  static void default_consumer(action::ret_t ignore) { }
 };
 
 #endif	/* CMDS_H */
