@@ -27,11 +27,14 @@ public:
   ///getter of actual handle
   store::handle at(const std::string& name);
   //also updates
-  void assoc(std::string name, store::handle entity) {
+  void assoc(std::string const& prop, store::handle entity) {
     if (store::deref(entity).is_nil())
-      throw std::invalid_argument("€dict: cannot hold NIL entity for name: " + name);
-    dict_[name] = entity;
+      throw std::invalid_argument("€dict: cannot hold NIL entity; for name: " + prop);
+    dict_[prop] = entity;
   }
+  bool dissoc(std::string const& prop) {
+    return dict_.erase(prop) == 0 ? false : true;
+ }
   //removes all
 public:
   void flush() {

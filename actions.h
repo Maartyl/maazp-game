@@ -56,6 +56,79 @@ public:
   }
 };
 
+//assoc[iate] first arg to prop of @^query
+class assoc_a : public action {
+  std::string query; //what object to change (absolute query / id)
+  std::string prop; //what property to change on query\dict
+public:
+  assoc_a(std::string const& query, std::string const& property) : query(query), prop(property) { }
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    //assert 1 arg ?
+    //assert cannot be a player action
+    //returns ... arg is known, - can get handle of query-obj?
+    //nil if fail ... that would throw... which?
+    if (REF d = store::deref(query).as_dict()) {
+      d.assoc(prop, args[0]);
+      return store::handle_of("$$"); //ok
+    } else return action::nil_ret;
+    
+  }
+};
+
+//dissoc[iate] prop of query-dict
+class dissoc_a : public action {
+  std::string query; //what object to change (absolute query / id)
+  std::string prop; //what property to change on query\dict
+public:
+  dissoc_a(std::string const& query, std::string const& property) : query(query), prop(property) { }
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    //assert 0 arg ?
+    //assert cannot be a player action
+    //returns ... arg is known, - can get handle of query-obj?
+    //nil if fail ... that would throw... which?
+    if (REF d = store::deref(query).as_dict()) {
+      d.dissoc(prop);
+      return store::handle_of("$$"); //ok
+    } else return action::nil_ret;
+  }
+};
+
+//conj[oin] item to bag
+class bag_conj_a : public action {
+  std::string query; //what object to change (absolute query / id)
+public:
+  bag_conj_a(std::string const& query) : query(query) { }
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    //assert 1 arg ?
+    //assert cannot be a player action
+    //returns ... arg is known, - can get handle of query-obj?
+    //nil if fail ... that would throw... which?
+    if (REF b = store::deref(query).as_bag()) {
+      b.insert(args[0]);
+      return store::handle_of("$$"); //ok
+    } else return action::nil_ret;
+
+  }
+};
+
+//disj[oin] item from bag
+class bag_disj_a : public action {
+  std::string query; //what object to change (absolute query / id)
+public:
+  bag_disj_a(std::string const& query) : query(query) { }
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    //assert 1 arg ?
+    //assert cannot be a player action
+    //returns ... arg is known, - can get handle of query-obj?
+    //nil if fail ... that would throw... which?
+    if (REF b = store::deref(query).as_bag()) {
+      b.erase(args[0]);
+      return store::handle_of("$$"); //ok
+    } else return action::nil_ret;
+  }
+};
+
+
 class test_set_ret : public action {
 public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
