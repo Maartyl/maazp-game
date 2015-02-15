@@ -20,9 +20,8 @@ public:
   end_game() : data_() { }
   end_game(entity::handle h) : data_(h) { }
 
-  entity::handle what() {
-    return data_;
-  }
+  entity::handle what() {return data_;}
+  static void cmd(std::string const& args) {throw end_game();}
 };
 
 #endif	/* END_GAME_H */

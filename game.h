@@ -13,6 +13,7 @@
 
 #include "store.h"
 #include "loading_cmds.h"
+#include "end_game.h"
 
 
 //main game loop
@@ -30,7 +31,15 @@ public:
    * both can share REPL
 
    */
-  void load(std::istream& is, const bool also_flush = true) {
+  store::handle main_loop(std::istream& is_lines, parser& p) {
+    try {
+      p.process(is_lines);
+      return action::nil_ret;
+    } catch (end_game& e) {
+      return e.what();
+    }
+  }
+  store::handle load(std::istream& is, const bool also_flush = true) {
     if (also_flush) store::flush();
     parser p({//loading commands
       {"def", with_id(defs_simple::def_dict)},
@@ -38,12 +47,11 @@ public:
       {"deftext", with_id(defs_simple::def_text)},
       {"assoc", with_id(defs_simple::assoc)}
     });
-    p.process(is);
+    return main_loop(is, p);
   }
-  void load(std::string const& file, const bool also_flush = true) {
+  store::handle load(std::string const& file, const bool also_flush = true) {
     std::ifstream ifs(file);
-    std::istream& is = ifs;
-    load(is, also_flush);
+    return load(ifs, also_flush);
   }
 
 

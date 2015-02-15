@@ -28,6 +28,11 @@ public:
     for (REF a : parser::words(args))
       store::add_alias(a, id); //exception if problem
   }
+  static void link(store::id const& id, std::string const& args) {
+    CREF p = parser::first_and_rest(args); //assert 1 arg
+    if (args.size() == 0 || p.second.size() != 0) throw std::invalid_argument("link: expects <id> <query>; got: " + id + " " + args);
+    store::emplace<elink>(id, p.first);
+  }
   //can copy simple dict, bag; nothing else / smart ... (for template objects)
   static void copy(store::id const& id, std::string const& args) {
     //assert args.size == 1

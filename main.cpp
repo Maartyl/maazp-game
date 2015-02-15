@@ -20,6 +20,7 @@
 #include "loading_cmds.h"
 #include "actions.h"
 #include "player_cmds.h"
+#include "game.h"
 
 //#define prn(cnt) std::cout << cnt << std::endl
 /*

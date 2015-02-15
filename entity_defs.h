@@ -227,7 +227,24 @@ class action_bag : public action, public bag {
         if (auto rt = a.invoke_event(player, args))
           ret = rt;
     return ret;
- }
+  }
+};
+
+//dereferences query upon dereferencing itself
+//sadly, can't compare handles for equality but adds flexibility
+class elink : public virtual entity {
+  std::string query;
+  entity& get() {
+    return store::deref(query);
+  }
+public:
+  elink(std::string const& query) : query(query) { }
+  virtual action& as_action() {return get().as_action();}
+  virtual bag& as_bag() {return get().as_bag();}
+  virtual dict& as_dict() {return get().as_dict();}
+  virtual eint& as_int() {return get().as_int();}
+  virtual text& as_text() {return get().as_text();}
+  virtual view& as_view() {return get().as_view();}
 };
 
 
