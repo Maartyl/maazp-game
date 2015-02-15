@@ -23,7 +23,7 @@
 
 //#define prn(cnt) std::cout << cnt << std::endl
 /*
- * 
+ *
  */
 int main(int argc, char** argv) {
   store::init();
@@ -36,7 +36,11 @@ int main(int argc, char** argv) {
   auto h3 = store::emplace<text>("#say1", "this is some text to test this");
 
   auto h4 = store::emplace<bag>("bag1");
-  store::deref("bag1").as_bag().insert(h);
+  auto h_bag1_inser = store::emplace<bag_conj_a>("bag1_conj", "bag1");
+  //store::deref("bag1").as_bag().insert(h);
+  REF qqr = store::deref(h_bag1_inser).as_action();
+  qqr.invoke(store::deref("?player"), h);
+  
   REF hr = *store::deref("bag1").as_bag().begin();
   if (REF i = hr->as_int())
     prn((int) i);
@@ -55,12 +59,12 @@ int main(int argc, char** argv) {
     {"yo", with_id([](store::id C& id, std::string C& args) {
         prn("hello! " << id << " and all of: " << args);
       })},
-    {"yah", with_id([](store::id C& id, std::string C& args) {
-        prn("smash! " << id << " and all of: " << args);
-      })},
     {"def", with_id(defs_simple::def_dict)},
     {"defint", with_id(defs_simple::def_int)},
     {"deftext", with_id(defs_simple::def_text)},
+    {"alias", with_id(defs_simple::alias)},
+    {"aliases", with_id(defs_simple::aliases)},
+    {"copy", with_id(defs_simple::copy)},
     {"assoc", with_id(defs_simple::assoc)}
   });
 
@@ -94,13 +98,15 @@ I don't KNOW!!!!
     some
        more stuff
   .endm
-         errcmd
+          alias ruka roo
+          aliases ruka w e r t y u ui i
+          copy ramram rampa
           )xxx";
 
   std::stringstream ss(ps);
   p.process(ss);
 
-  if (REF d = store::deref("rampa")["q"]["b"].as_int())
+  if (REF d = store::deref("ramram")["q"]["b"].as_int())
     prn("roo is " << d.value());
   else
     std::cout << "roo is not" << std::endl;
@@ -117,8 +123,8 @@ I don't KNOW!!!!
 
   prn("action start");
   action_cmd ac(player_fns::consume_action, make_unique<test_set_ret>());
-  ac("");
-  ac("roo");
+  ac("q w e r");
+  ac("ruka ui");
   prn("action end");
   
   return 0;

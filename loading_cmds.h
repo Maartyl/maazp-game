@@ -15,7 +15,35 @@
 #include "cmds.h"
 
 ///simple means: can be just a function; not necessarily a functor
+
 class defs_simple {
+public:
+  static void alias(store::id const& id, std::string const& args) {
+    //assert args.size == 1
+    CREF p = parser::first_and_rest(args);
+    if (p.second.size() != 0) throw std::invalid_argument("alias: expects <alias> <existing id>; got: " + id + " " + args);
+    store::add_alias(id, p.first); //exception if problem
+  }
+  static void aliases(store::id const& id, std::string const& args) {
+    for (REF a : parser::words(args))
+      store::add_alias(a, id); //exception if problem
+  }
+  //can copy simple dict, bag; nothing else / smart ... (for template objects)
+  static void copy(store::id const& id, std::string const& args) {
+    //assert args.size == 1
+    CREF p = parser::first_and_rest(args);
+    if (p.second.size() != 0) throw std::invalid_argument("copy: expects <new id> <existing id>; got: " + id + " " + args);
+    REF e = store::deref(p.first);
+    if (REF x = e.as_dict()) {
+      store::emplace<dict>(id, x);
+      return;
+    }
+    if (REF x = e.as_bag()) {
+      store::emplace<bag>(id, x);
+      return;
+    }
+  }
+
 public:
   static void def_dict(store::id const& id, std::string const& args) {
     auto words = parser::words(args);
