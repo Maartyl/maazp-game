@@ -25,7 +25,14 @@ public:
   //  entity& operator[](const std::string& name);
   
   ///getter of actual handle
-  store::handle at(const std::string& name);
+  store::handle at(const std::string& name) {
+    auto it = dict_.find(name);
+    if (it != std::end(dict_))
+      return (it->second);
+
+    return{ };
+    //throw std::invalid_argument("€dict: not found: " + name);
+  }
   //also updates
   void assoc(std::string const& prop, store::handle entity) {
     if (store::deref(entity).is_nil())

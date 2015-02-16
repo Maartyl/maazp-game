@@ -55,7 +55,7 @@ entity_id:
   - some will exist even before
   - and '$$' is considered valid dummy (like ''t in lisp) -- for ?tags to see if they are present
   '%': not meant for global ids;; orientation, otherwise special {%south, %north, %up, ...}
-  '&': predefined associated texts (in properties, mainly)
+  '&': predefined view places (in properties, mainly)
   '*': 'events'
   '~': transient / dynamicly created ... (shouldn't be defined manually in def-file; can by in saved files...)
   '?': tag entities (enums, etc.) to query in actions etc.

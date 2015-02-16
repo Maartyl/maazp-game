@@ -58,8 +58,23 @@ private:
   
 public: //access
   ///dereference
-  static entity& deref(handle const& h);
-  static entity& deref(store::id const& id, const bool nil_on_fail = false);
+  static entity& deref(); //nil
+  static entity& deref(handle const& h) {
+    return h ? *h : deref();
+  }
+  static entity& deref(store::id const& id, const bool nil_on_fail = false) {
+    if (id.size() == 0) // to be able to get get nil easily from anywhere :: deref("", true);
+      if (nil_on_fail) return deref();
+      else throw std::logic_error("deref: no id provided");
+
+    if (id[0] == '^') return query(id, nil_on_fail);
+
+    if (!nil_on_fail)
+      return deref(handle_of(id));
+
+    auto it = find(id);
+    return it != end() ? deref(it->second) : deref();
+  }
   //  static entity& deref(store::id const& id) { // maybe... to make it work as functional argument
   //    return deref(id, false);
   //  }
@@ -81,10 +96,10 @@ public: //access
   }
   static entity& query(std::string const& qry, entity& origin, const bool nil_on_fail = false) {
     if (qry[0] != '^')
-      if (nil_on_fail) return deref("", true);
+      if (nil_on_fail) return deref();
       else throw std::logic_error("invalid query: " + qry);
     if (origin && qry[1] != '.')
-      if (nil_on_fail) return deref("", true);
+      if (nil_on_fail) return deref();
       else throw std::logic_error("invalid relative query: " + qry);
     //TODO: possibly full correctness check
 
@@ -101,7 +116,9 @@ public: //access
 
     return *e;
   }
-  static entity& query(std::string const& qry, const bool nil_on_fail = false);
+  static entity& query(std::string const& qry, const bool nil_on_fail = false) {
+    return query(qry, deref(), nil_on_fail);
+  }
 
 
 

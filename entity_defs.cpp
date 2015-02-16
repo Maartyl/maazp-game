@@ -8,11 +8,11 @@ nil_entity nil_entity::NILVAL = nil_entity(); //initialize nil
 //    return store::deref(h);
 //  else return nil_entity::get();
 //}
-store::handle dict::at(const std::string& name) {
-  auto it = dict_.find(name);
-  if (it != std::end(dict_))
-    return (it->second);
-
-  return{};
-  //throw std::invalid_argument("€dict: not found: " + name);
-}
+//store::handle dict::at(const std::string& name) {
+//  auto it = dict_.find(name);
+//  if (it != std::end(dict_))
+//    return (it->second);
+//
+//  return{};
+//  //throw std::invalid_argument("€dict: not found: " + name);
+//}

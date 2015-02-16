@@ -90,7 +90,7 @@ public:
 
 };
 
-//assoc[iate] first arg to prop of @^query
+//assoc[iate] first arg to prop of ^query
 class assoc_a : public action {
   std::string query; //what object to change (absolute query / id)
   std::string prop; //what property to change on query\dict

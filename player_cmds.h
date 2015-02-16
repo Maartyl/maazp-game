@@ -25,6 +25,13 @@ namespace player_fns {
       return;
     }
     throw std::logic_error("action_cmd: Outmost action didn't return view.");
+  }
+
+  //basic cmds for parser_map
+  void go(std::string const& args) {
+    //south, north, east, west, up, down, or: deref-text-entity
+    auto p = parser::first_and_rest(args);
+    if (p.first == "" || p.second != "")
  }
 }
 

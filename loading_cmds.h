@@ -21,7 +21,7 @@ public:
   static void alias(store::id const& id, std::string const& args) {
     //assert args.size == 1
     CREF p = parser::first_and_rest(args);
-    if (p.second.size() != 0) throw std::invalid_argument("alias: expects <alias> <existing id>; got: " + id + " " + args);
+    if (args.size() == 0 || p.second.size() != 0) throw std::invalid_argument("alias: expects <alias> <existing id>; got: " + id + " " + args);
     store::add_alias(id, p.first); //exception if problem
   }
   static void aliases(store::id const& id, std::string const& args) {
