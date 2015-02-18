@@ -190,6 +190,14 @@ public: //line helpers
     }
     return v;
   }
+  static std::string to_lower(std::string const& s) {
+    return to_lower(std::string(s));
+  }
+  static std::string to_lower(std::string && s) {
+    auto rt = std::move(s);
+    std::transform(rt.begin(), rt.end(), rt.begin(), ::tolower);
+    return rt;
+  }
 private:
   cmd_map cmds_;
 };
