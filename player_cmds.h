@@ -46,6 +46,7 @@ namespace player_fns {
     else if (d == "west" || d == "w") d = "%west";
     else if (d == "up" || d == "u") d = "%up";
     else if (d == "down" || d == "d") d = "%down";
+    else d = "%" + d;
     //else probably won't find direction and throw correct ex.
     consume_invoker(player_move(d));
   } 
