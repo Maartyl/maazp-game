@@ -22,41 +22,47 @@ public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args)const {
     //cause is unimportant ... - different ret for events?
     //args ... could mean direction, but ... different command? / special direction? ("", use arg") ...
-    if (REF tran = player["area"][direction].as_dict()) { //transition
-      if (store::deref(tran["*passing"].trigger(player))["?stop"]) {
-        // cannot pass: ... should use something from that stop
-        //return "can't pass" view
-
+    REF area = player["area"];
+    if (REF tran = area[direction].as_dict()) { //transition
+      if (REF ps = store::deref(tran["*passing"].trigger(player))) {
+        if (ps["?stop"]) {
+          // cannot pass: ... should use something from that stop
+          //return "can't pass" view
+          return ps.as_dict().at("&stop");
+        }
       }
-      if (store::deref(player["area"]["*leaving"].trigger(player))["?stop"]) {
-        //can't move: not allowed to leave ... should use something from that stop for view
-        //return "cant leave" view
+      if (REF ps = store::deref(area["*leaving"].trigger(player))) {
+        if (ps["?stop"]) {
+          //can't move: not allowed to leave ... should use something from that stop for view
+          //return "cant leave" view
+          return ps.as_dict().at("&stop");
+        }
       }
-      player.set("area", tran.at("%to"));
-      player["area"]["*left"].trigger(player);
+      player.set("area", tran.at("%to")); //actually move
+      area["*left"].trigger(player); //use original area
       tran["*passed"].trigger(player);
-      //return good view
+      return tran.at("&go");
       
     }
-    //return: there is nothing in that direction
+    return store::transient<textview>("HACK; nothing in direction: " + direction);
   }
 };
 
-//... kind of weird command; possibly not used / special ... (takes transient texts...)
-class player_go : public action {
-public:
-  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
-    //assert: 1 arg ... ? for now...
-    if (args.size() != 1)
-      return { }; //some "wrong command arguments view" or something...
-
-    if (CREF direction = store::deref(args[0]).as_text()) {
-      auto pm = player_move(direction.value());
-      CREF pmr = pm;
-      return pmr.invoke(player, cause, args);
-    }
-  }
-};
+////... kind of weird command; possibly not used / special ... (takes transient texts...)
+//class player_go : public action {
+//public:
+//  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+//    //assert: 1 arg ... ? for now...
+//    if (args.size() != 1)
+//      return { }; //some "wrong command arguments view" or something...
+//
+//    if (CREF direction = store::deref(args[0]).as_text()) {
+//      auto pm = player_move(direction.value());
+//      CREF pmr = pm;
+//      return pmr.invoke(player, cause, args);
+//    }
+//  }
+//};
 
 /* ---------- generic composable actions ---------- */
 

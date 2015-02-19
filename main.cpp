@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
   parser p({
     {"yo", with_id([](store::id C& id, std::string C& args) {
-        prn("hello! " << id << " and all of: " << args);
+        prn("hello! " << id << (args == "" ? ";" : " and all of: ") << args);
       })},
     {"def", with_id(defs_simple::def_dict)},
     {"defint", with_id(defs_simple::def_int)},
@@ -66,7 +66,9 @@ int main(int argc, char** argv) {
     {"alias", with_id(defs_simple::alias)},
     {"aliases", with_id(defs_simple::aliases)},
     {"copy", with_id(defs_simple::copy)},
+    {"go", player_fns::go},
     {"assoc", with_id(defs_simple::assoc)}
+
   });
 
   std::string ps = R"xxx(
@@ -102,6 +104,34 @@ I don't KNOW!!!!
           alias ruka roo
           aliases ruka w e r t y u ui i
           copy ramram rampa
+
+
+
+          
+          def start_area
+          assoc $player area start_area
+          
+          def a_west
+
+          deftext x_gw  going west
+          deftext x_lw  looking west
+          
+          def tr_start_west %to a_west %from start_area &go x_gw
+          assoc start_area %west tr_start_west
+
+          go south
+      yo nigga
+          go west
+
+
+
+
+
+
+
+
+
+
           )xxx";
 
   std::stringstream ss(ps);
@@ -112,7 +142,7 @@ I don't KNOW!!!!
   else
     std::cout << "roo is not" << std::endl;
 
-  if (REF d = store::query("^rampa.q.b").as_int())
+  if (REF d = store::deref("^rampa.q.b").as_int())
     prn("roo is " << d.value());
   else
     std::cout << "roo is not" << std::endl;
@@ -123,7 +153,7 @@ I don't KNOW!!!!
     std::cout << "t is not" << std::endl;
 
   prn("action start");
-  action_cmd ac(player_fns::consume_action, make_unique<test_set_ret>());
+  action_cmd ac(player_fns::consume_action_ret, make_unique<test_set_ret>());
   ac("q w e r");
   ac("ruka ui");
   prn("action end");

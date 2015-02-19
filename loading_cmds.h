@@ -56,7 +56,7 @@ public:
     dict_assoc(store::deref(store::emplace<dict>(id)).as_dict(), words); //add |> deref |> assoc words
   }
   static void def_text(store::id const& id, std::string const& args) {
-    store::emplace<text>(id, args);
+    store::emplace<textview>(id, args);
   }
   static void def_int(store::id const& id, std::string const& args) {
     try {

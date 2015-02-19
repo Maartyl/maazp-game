@@ -8,12 +8,15 @@
 #ifndef PLAYER_CMDS_H
 #define	PLAYER_CMDS_H
 
+#include <stdexcept>
+
 #include "cmds.h"
+#include "actions.h"
 
 
 
 namespace player_fns {
-  void inline consume_action(const action::ret_t reth) {
+  void inline consume_action_ret(const action::ret_t reth) {
     if (REF ret = store::deref(reth).as_view()) {
       prn(""); //prn(">---"); //TODO: parameterize / load from text entity / ...
       prn(ret.print());
@@ -28,11 +31,23 @@ namespace player_fns {
   }
 
   //basic cmds for parser_map
-  void go(std::string const& args) {
+  void inline go(std::string const& args) {
     //south, north, east, west, up, down, or: deref-text-entity
     auto p = parser::first_and_rest(args);
     if (p.first == "" || p.second != "")
- }
+      throw std::invalid_argument("go: requires exactly 1 argument: direction");
+    std::string d = parser::to_lower(std::move(p.first));
+    if (d == "south" || d == "s") d = "%south";
+    else if (d == "north" || d == "n") d = "%north";
+    else if (d == "east" || d == "e") d = "%east";
+    else if (d == "west" || d == "w") d = "%west";
+    else if (d == "up" || d == "u") d = "%up";
+    else if (d == "down" || d == "d") d = "%down";
+    //else probably won't find direction and throw correct ex.
+    auto pm = player_move(d);
+    action& pmr = pm;
+    consume_action_ret(pmr.invoke(store::deref("?player")));
+  } 
 }
 
 #endif	/* PLAYER_CMDS_H */
