@@ -29,6 +29,9 @@ namespace player_fns {
     }
     throw std::logic_error("action_cmd: Outmost action didn't return view.");
   }
+  void inline consume_invoker(action const& a) {
+    consume_action_ret(a.invoke(store::deref("?player")));
+  }
 
   //basic cmds for parser_map
   void inline go(std::string const& args) {
@@ -44,9 +47,7 @@ namespace player_fns {
     else if (d == "up" || d == "u") d = "%up";
     else if (d == "down" || d == "d") d = "%down";
     //else probably won't find direction and throw correct ex.
-    auto pm = player_move(d);
-    action& pmr = pm;
-    consume_action_ret(pmr.invoke(store::deref("?player")));
+    consume_invoker(player_move(d));
   } 
 }
 
