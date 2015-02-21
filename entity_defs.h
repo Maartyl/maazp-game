@@ -19,8 +19,10 @@
 #include "store.h"
 
 class dict : public virtual entity {
-  std::map<std::string, store::handle> dict_{};
+  typedef std::map<std::string, store::handle> d_map;
+  d_map dict_{};
 public:
+  typedef d_map::value_type kv_pair;
   //  ///syntax helper for chaining
   //  entity& operator[](const std::string& name);
   
@@ -41,7 +43,11 @@ public:
   }
   bool dissoc(std::string const& prop) {
     return dict_.erase(prop) == 0 ? false : true;
- }
+  }
+  void for_each(std::function<void(d_map::value_type const&) > fn) {
+    for (CREF a : dict_)
+      fn(a);
+  }
   //removes all
 public:
   void flush() {

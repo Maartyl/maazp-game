@@ -14,7 +14,6 @@
 #include "actions.h"
 
 
-
 namespace player_fns {
   void inline consume_action_ret(const action::ret_t reth) {
     if (REF ret = store::deref(reth).as_view()) {
@@ -35,10 +34,10 @@ namespace player_fns {
 
   //basic cmds for parser_map
   void inline go(std::string const& args) {
-    //south, north, east, west, up, down, or: deref-text-entity
+    //south, north, east, west, up, down, or: %arg
     auto p = parser::first_and_rest(args);
     if (p.first == "" || p.second != "")
-      throw std::invalid_argument("go: requires exactly 1 argument: direction");
+      throw std::invalid_argument("go: expects exactly 1 argument: direction; got: " + args);
     std::string d = parser::to_lower(std::move(p.first));
     if (d == "south" || d == "s") d = "%south";
     else if (d == "north" || d == "n") d = "%north";

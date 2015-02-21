@@ -14,6 +14,7 @@
 #include "store.h"
 #include "loading_cmds.h"
 #include "end_game.h"
+#include "player_cmds.h"
 
 
 //main game loop
@@ -21,7 +22,7 @@
 //menus ...
 class game {
 public:
-/*
+  /*
    * what should it do:
    * menu
    * - open "menu game"
@@ -31,7 +32,7 @@ public:
    * both can share REPL
 
    */
-  store::handle main_loop(std::istream& is_lines, parser& p) {
+  store::handle main_loop(std::istream& is_lines, parser const& p) {
     try {
       p.process(is_lines);
       return action::nil_ret;
@@ -52,6 +53,18 @@ public:
   store::handle load(std::string const& file, const bool also_flush = true) {
     std::ifstream ifs(file);
     return load(ifs, also_flush);
+  }
+  store::handle play(std::istream& cmds) {
+    //cmds: player commands (stdin)
+    parser::cmd_map cmd_m{
+      {"go", player_fns::go}
+    };
+    if (REF user_defined = store::deref("$player_commands", true).as_dict())
+      user_defined.for_each([&](dict::kv_pair C& kvp) {
+        if (store::deref(kvp.second).as_action())
+          cmd_m.emplace(kvp.first, action_cmd(kvp.second));
+      });
+    return main_loop(cmds, parser(std::move(cmd_m)));
   }
 
 

@@ -54,12 +54,13 @@ class parser {
 public: //typedefs
   typedef std::function<void(std::string const&/*rest of line: ~args*/) > cmdfn;
   typedef std::unordered_map<std::string, cmdfn> cmd_map;
-  static constexpr const char* delims = " ,\t\n\r";
+  static constexpr const char* delims = " ,\n\t\r";
 public:
-  parser(cmd_map commands) : cmds_(commands) { }
+  parser(cmd_map const& commands) : cmds_(commands) { }
+  parser(cmd_map && commands) : cmds_(commands) { }
 
 public: //process istream
-  void process(std::istream & is) {
+  void process(std::istream & is)const {
     //when change: 'auto' to 'CREF' - all calls err-runtime ... no idea why(; so they are copies, who cares...)
     auto ignore = [](std::string const&) {};
     auto pre = fn_or_default("#pre", ignore);
@@ -93,7 +94,7 @@ public: //process istream
         empty_ln(line);
         continue;
       }
-      
+
       try {
         pre(line);
         process_line(lp.first, lp.second);
@@ -110,7 +111,7 @@ private: //handle multiline strings
   ///reads until .endm
   ///-> {number of lines read, lines concatenated}
   ///include_comments: if true, doesn't remove comments; keeps lines intact
-  std::pair<size_t, std::string> compose_multiline(std::string const& start, std::istream & is, const bool include_comments = true) {
+  std::pair<size_t, std::string> compose_multiline(std::string const& start, std::istream & is, const bool include_comments = true)const {
     //keeps 'comments' (# and following text) [except for start: already processed - good]
     std::string line;
     std::stringstream rows; 
@@ -125,12 +126,12 @@ private: //handle multiline strings
     throw std::runtime_error("parser: EOF while reading .multi; expected .endm");
   }
 private: // process line
-  void process_line(std::string const& cmd, std::string const& args) {
+  void process_line(std::string const& cmd, std::string const& args)const {
     fn_or_default(cmd, [&](std::string const&) {
       throw std::logic_error("no such command: " + cmd);
     })(args);
   }
-  cmdfn const& fn_or_default(std::string const& cmd, cmdfn const& dflt) {
+  cmdfn const& fn_or_default(std::string const& cmd, cmdfn const& dflt)const {
     auto cmdit = cmds_.find(cmd);
     if (cmdit == std::end(cmds_))
       return dflt;

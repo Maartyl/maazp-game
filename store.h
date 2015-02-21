@@ -97,10 +97,10 @@ public: //access
   static entity& query(std::string const& qry, entity& origin, const bool nil_on_fail = false) {
     if (qry[0] != '^')
       if (nil_on_fail) return deref();
-      else throw std::logic_error("invalid query: " + qry);
+      else throw std::invalid_argument("invalid query: " + qry);
     if (origin && qry[1] != '.')
       if (nil_on_fail) return deref();
-      else throw std::logic_error("invalid relative query: " + qry);
+      else throw std::invalid_argument("invalid relative query: " + qry);
     //TODO: possibly full correctness check
 
     CREF q = parser::words(parser::triml(qry, "^"), "."); //query parts

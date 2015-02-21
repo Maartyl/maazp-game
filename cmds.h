@@ -46,17 +46,21 @@ private:
 class action_cmd {
 public:
   using consumer_t = std::function<void(const action::ret_t) >;
+  typedef store::handle action_h;
 private:
-  std::unique_ptr<action> a_;
+  action_h a_;
   store::handle cause_h_;
   consumer_t consumer;
 public:
-  action_cmd(consumer_t cr, store::handle cause, std::unique_ptr<action> a)
-  : a_(std::move(a)), cause_h_(std::move(cause)), consumer(cr) { }
+  action_cmd(consumer_t cr, store::handle cause, action_h a)
+  : a_((a)), cause_h_(std::move(cause)), consumer(cr) {
+    if (!store::deref(a).as_action())
+      throw std::invalid_argument("action_cmd: not given action handle");
+    }
   //cause: ?player
-  action_cmd(consumer_t cr, std::unique_ptr<action> a) : action_cmd(cr, store::handle_of("?player"), std::move(a)) { }
+  action_cmd(consumer_t cr, action_h a) : action_cmd(cr, store::handle_of("?player"), (a)) { }
   //ignore result; cause: ?player
-  action_cmd(std::unique_ptr<action> a) : action_cmd(default_consumer, std::move(a)) { }
+  action_cmd(action_h a) : action_cmd(default_consumer, (a)) { }
   void operator()(std::string const& line) {
     auto p = parser::words(line);
     
@@ -64,7 +68,7 @@ public:
     hv.reserve(p.size());
     for (CREF w : p) hv.push_back(store::handle_of(w));
 
-    consumer(a_->invoke(store::deref(cause_h_), hv));
+    consumer(store::deref(a_).as_action().invoke(store::deref(cause_h_), hv));
   }
 private:
   static void default_consumer(action::ret_t ignore) { }
