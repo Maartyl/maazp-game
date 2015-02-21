@@ -13,10 +13,12 @@ ENILIMPL(bag, bag)
 
 
 entity& entity::operator[](const std::string& name) {
-  if (REF d = as_dict())
+  if (REF d = as_dict()) 
     if (auto h = d.at(name))
       return store::deref(h);
-  else return d; //nil
+  //  else return store::deref(); //not present : nil
+  // else return d; //nil already
+  return store::deref(); // nil otherwise
 }
 bool entity::set(std::string const& key, store::handle h) {
   if (REF d = as_dict()) {

@@ -29,7 +29,7 @@
 int main(int argc, char** argv) {
   store::init();
 
-  REF n = nil_entity::get();
+  //REF n = nil_entity::get();
   //n.is_nil();
 
   auto h = store::emplace<entity_int>("#int1", 5);

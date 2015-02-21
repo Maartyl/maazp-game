@@ -57,6 +57,7 @@
       <compileType>
         <ccTool>
           <standard>8</standard>
+          <warningLevel>2</warningLevel>
         </ccTool>
       </compileType>
       <item path="actions.cpp" ex="false" tool="1" flavor2="0">

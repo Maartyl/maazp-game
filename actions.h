@@ -86,7 +86,7 @@ public:
 class comp_main_a : comp_a {
   std::string main_action;
 public:
-  comp_main_a(std::string const& main_a, str_vec const& action_ids) : main_action(main_a), comp_a(action_ids) { }
+  comp_main_a(std::string const& main_a, str_vec const& action_ids) : comp_a(action_ids), main_action(main_a) { }
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
     comp_a::invoke(player, cause, args); //ignore result
     if (REF a = store::deref(main_action).as_action())

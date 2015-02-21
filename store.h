@@ -63,10 +63,10 @@ public: //access
     return h ? *h : deref();
   }
   static entity& deref(store::id const& id, const bool nil_on_fail = false) {
-    if (id.size() == 0) // to be able to get get nil easily from anywhere :: deref("", true);
+    if (id.size() == 0) { // to be able to get get nil easily from anywhere :: deref("", true);
       if (nil_on_fail) return deref();
       else throw std::logic_error("deref: no id provided");
-
+    }
     if (id[0] == '^') return query(id, nil_on_fail);
 
     if (!nil_on_fail)
@@ -95,12 +95,14 @@ public: //access
     throw std::invalid_argument("€store[id_of]: invalid handle");
   }
   static entity& query(std::string const& qry, entity& origin, const bool nil_on_fail = false) {
-    if (qry[0] != '^')
+    if (qry[0] != '^') {
       if (nil_on_fail) return deref();
       else throw std::invalid_argument("invalid query: " + qry);
-    if (origin && qry[1] != '.')
+    }
+    if (origin && qry[1] != '.') {
       if (nil_on_fail) return deref();
       else throw std::invalid_argument("invalid relative query: " + qry);
+    }
     //TODO: possibly full correctness check
 
     CREF q = parser::words(parser::triml(qry, "^"), "."); //query parts

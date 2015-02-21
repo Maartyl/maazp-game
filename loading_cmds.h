@@ -80,10 +80,10 @@ public:
   }
 private:
   static bool dict_assoc_check_even(str_vec const& forms, std::string const& throw_ = "") {
-    if (forms.size() % 2 != 0)
+    if (forms.size() % 2 != 0) 
       if (throw_.size() != 0) throw std::logic_error(throw_);
       else return false;
-    return true;
+    else return true;
   }
   static void dict_assoc(dict& d, str_vec const& forms) {
     //[requires] already checked that size is even.

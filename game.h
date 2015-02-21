@@ -22,7 +22,7 @@
 //menus ...
 class game {
 public:
-  /*
+/*
    * what should it do:
    * menu
    * - open "menu game"
@@ -32,7 +32,30 @@ public:
    * both can share REPL
 
    */
+  
+  store::handle load(std::istream& is, const bool also_flush = true) {
+    if (also_flush) store::flush();
+    return main_loop(is, parser(dynamic_cmds({
+      {"def", with_id(defs_simple::def_dict)},
+      {"defint", with_id(defs_simple::def_int)},
+      {"deftext", with_id(defs_simple::def_text)},
+      {"assoc", with_id(defs_simple::assoc)}
+    }, "$loading_commands")));
+  }
+  store::handle load(std::string const& file, const bool also_flush = true) {
+    std::ifstream ifs(file);
+    return load(ifs, also_flush);
+  }
+  store::handle play(std::istream& cmds) {
+    return main_loop(cmds, parser(dynamic_cmds({
+      {"go", player_fns::go}
+    }, "$player_commands")));
+  }
+
+
+private:
   store::handle main_loop(std::istream& is_lines, parser const& p) {
+    //~RE(P)L
     try {
       p.process(is_lines);
       return action::nil_ret;
@@ -40,35 +63,14 @@ public:
       return e.what();
     }
   }
-  store::handle load(std::istream& is, const bool also_flush = true) {
-    if (also_flush) store::flush();
-    parser p({//loading commands
-      {"def", with_id(defs_simple::def_dict)},
-      {"defint", with_id(defs_simple::def_int)},
-      {"deftext", with_id(defs_simple::def_text)},
-      {"assoc", with_id(defs_simple::assoc)}
-    });
-    return main_loop(is, p);
-  }
-  store::handle load(std::string const& file, const bool also_flush = true) {
-    std::ifstream ifs(file);
-    return load(ifs, also_flush);
-  }
-  store::handle play(std::istream& cmds) {
-    //cmds: player commands (stdin)
-    parser::cmd_map cmd_m{
-      {"go", player_fns::go}
-    };
-    if (REF user_defined = store::deref("$player_commands", true).as_dict())
-      user_defined.for_each([&](dict::kv_pair C& kvp) {
+  parser::cmd_map dynamic_cmds(parser::cmd_map && cmds, store::id const& bind) {
+    if (REF user_defined = store::deref(bind, true).as_dict())
+      user_defined.for_each([&](dict::kv_pair C & kvp) {
         if (store::deref(kvp.second).as_action())
-          cmd_m.emplace(kvp.first, action_cmd(kvp.second));
+          cmds.emplace(kvp.first, action_cmd(kvp.second));
       });
-    return main_loop(cmds, parser(std::move(cmd_m)));
-  }
-
-
-private:
+    return cmds;
+ }
 
 };
 
