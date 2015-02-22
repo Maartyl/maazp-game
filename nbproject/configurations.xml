@@ -14,6 +14,7 @@
       <itemPath>parser.h</itemPath>
       <itemPath>player_cmds.h</itemPath>
       <itemPath>store.h</itemPath>
+      <itemPath>template_view.h</itemPath>
       <itemPath>utils.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -100,6 +101,8 @@
       </item>
       <item path="store.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="template_view.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="utils.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
@@ -162,6 +165,8 @@
       <item path="store.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="store.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="template_view.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="utils.h" ex="false" tool="3" flavor2="0">
       </item>
