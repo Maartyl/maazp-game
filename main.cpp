@@ -160,17 +160,11 @@ I don't KNOW!!!!
   prn("action end");
 
   templateview tv("Hello. roo is ^rampa.q.b... and I must say, ^$&2! Great.");
+  templateview tv2("<Hello2. ^$&2! End2.>");
   view& tvr = tv;
   auto kk = textview("hasta la vista");
+  //prn(tvr.print(tv2)); //inf loop: that's correct (is 'specification' correct? ... why not...)
   prn(tvr.print(kk));
-
-  //  {
-  //    store_context_frame({
-  //      {"$&1", kk}
-  //    });
-  //
-  //  }
-
 
   return 0;
 }
