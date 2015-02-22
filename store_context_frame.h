@@ -18,10 +18,11 @@ class store_context_frame {
   //uses RAII for safe, correct stacking
   store::handle dict_;
   store_context_frame* next_lvl;
+  bool lax; // just ignore invalid dicts
 public:
   typedef std::map<std::string, entity::handle> dict_map;
-  store_context_frame(dict_map&& d);
-  store_context_frame(store::handle d);
+  store_context_frame(dict_map&& d, const bool lax = false);
+  store_context_frame(store::handle d, const bool lax = false);
   virtual ~store_context_frame();
 public:
   store::handle find(store::id id);
