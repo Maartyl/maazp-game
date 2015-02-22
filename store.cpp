@@ -15,6 +15,17 @@ store store::VAL = store();
 entity& store::deref() {
   return nil_entity::get();
 }
+store::handle store::handle_of() {
+  return{};
+}
+store::handle store::dict_get(entity& dh, store::id const& prop) {
+  if (REF d = dh.as_dict())
+    return d.at(prop);
+  else return handle_of();
+}
+
+///-----
+
 void store::flush_dicts(store& s) {
   // ... cyclic references in dicts? PROBLEM
   // sadly, I must traverse it and erase dicts myself...

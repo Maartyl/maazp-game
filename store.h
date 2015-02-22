@@ -30,12 +30,12 @@ public:
 private:
   typedef std::unordered_map<store::id, handle>::iterator map_iter;
   store() { } //private .ctor: ~singleton
+  static map_iter iter_err(store::id const& id) {
+    throw std::invalid_argument("€store: invalid id: " + id);
+  }
   static map_iter iter_of(store::id const& id) {
     auto it = find(id);
-    if (it != end())
-      return it;
-
-    throw std::invalid_argument("€store: invalid id: " + id);
+    return it != end() ? it : iter_err(id);
   }
   static map_iter find(store::id const& id) {
     auto it = find_not_alias(id);
@@ -55,38 +55,35 @@ private:
     return std::end(VAL.entities_);
   }
 
-  
 public: //access
   ///dereference
   static entity& deref(); //nil
   static entity& deref(handle const& h) {
     return h ? *h : deref();
   }
-  static entity& deref(store::id const& id, const bool nil_on_fail = false) {
-    if (id.size() == 0) { // to be able to get get nil easily from anywhere :: deref("", true);
-      if (nil_on_fail) return deref();
-      else throw std::logic_error("deref: no id provided");
-    }
-    if (id[0] == '^') return query(id, nil_on_fail);
-
-    if (!nil_on_fail)
-      return deref(handle_of(id));
+  static entity& deref(store::id const& id, const bool nil_on_fail) {
+    return deref(handle_direct(id, nil_on_fail));
+  }
+  static entity& deref(store::id const& id)/*throw on fail*/ {
+    return deref(handle_direct(id));
+  }
+  static handle handle_of(); //nil handle
+  static handle handle_of(store::id const& id)/*throw on fail*/ {
+    return handle_of(id, false);
+  }
+  static handle handle_of(store::id const& id, const bool nil_on_fail/*false*/) {
+    if (id[0] == '^') return transient<elink>(id); //handle to query: performs query upon dereferencing
+    return handle_direct(id, nil_on_fail);
+  }
+  static handle handle_direct(store::id const& id)/*throw on fail*/ {
+    return handle_direct(id, false);
+  }
+  static handle handle_direct(store::id const& id, const bool nil_on_fail/*false*/) {
+    if (id[0] == '^') return query_handle(id, nil_on_fail); //actually perform query
 
     auto it = find(id);
-    return it != end() ? deref(it->second) : deref();
+    return it != end() ? it->second : (nil_on_fail ? handle_of() : iter_err(id)->second);
   }
-  //  static entity& deref(store::id const& id) { // maybe... to make it work as functional argument
-  //    return deref(id, false);
-  //  }
-  static handle handle_of(store::id const& id) {
-    return iter_of(id)->second;
-  }
-  //  static handle handle_of(entity & e) {
-  //    return &e;
-  //  }
-  //  static store::id const& id_of(entity & e) {
-  //    return id_of(handle_of(e));
-  //  }
   static store::id const& id_of(handle const& h) {
     auto it = VAL.iters_.find(h);
     if (it != std::end(VAL.iters_)) {
@@ -95,31 +92,41 @@ public: //access
     throw std::invalid_argument("€store[id_of]: invalid handle");
   }
   static entity& query(std::string const& qry, entity& origin, const bool nil_on_fail = false) {
-    if (qry[0] != '^') {
-      if (nil_on_fail) return deref();
-      else throw std::invalid_argument("invalid query: " + qry);
-    }
-    if (origin && qry[1] != '.') {
-      if (nil_on_fail) return deref();
-      else throw std::invalid_argument("invalid relative query: " + qry);
-    }
-    //TODO: possibly full correctness check
-
-    CREF q = parser::words(parser::triml(qry, "^"), "."); //query parts
-    auto it = std::begin(q);
-    //ptr to be able to change it
-    entity* e = &(origin ? origin : deref(*it, nil_on_fail)); //current entity ptr; origin || deref first
-    if (origin) e = &(*e)[*it]; //in case of relative query: first argument is property too
-    while (*e && (++it != std::end(q))) //for q, but first; stop for nil entity
-      e = &(*e)[*it]; //update: ptr of reference from dict at [current property from q]
-
-    if (!nil_on_fail && !*e) //is nil: throw instead of returning ;; virtual second
-      throw std::logic_error("query failed at: " + *it + " of: " + qry);
-
-    return *e;
+    return deref(query_handle(qry, origin, nil_on_fail));
   }
   static entity& query(std::string const& qry, const bool nil_on_fail = false) {
     return query(qry, deref(), nil_on_fail);
+  }
+  static handle query_handle(std::string const& qry, const bool nil_on_fail = false) {
+    return query_handle(qry, deref(), nil_on_fail);
+  }
+  static handle query_handle(std::string const& qry, entity& origin, const bool nil_on_fail = false) {
+    if (qry[0] != '^') {
+      if (nil_on_fail) return handle_of();
+      else throw std::invalid_argument("invalid query: " + qry);
+    }
+    if (origin && qry[1] != '.') {
+      if (nil_on_fail) return handle_of();
+      else throw std::invalid_argument("invalid relative query: " + qry);
+    }
+    //TODO: possibly full correctness check (valid chars)
+
+    CREF q = parser::words(parser::triml(qry, "^"), "."); //query parts
+    if (q.size() == 0) {
+      if (nil_on_fail) return handle_of();
+      else throw std::invalid_argument("invalid (empty) query: " + qry);
+    }
+
+    auto it = std::begin(q);
+    //ptr to be able to change it
+    handle e = (origin ? dict_get(origin, *it) : handle_of(*it, nil_on_fail)); //current entity ptr; hrom origin || handle of first
+    while (e && (++it != std::end(q))) //for q, but first; stop for nil entity
+      e = dict_get(e, *it); //update: ptr of reference from dict at [current property from q]
+
+    if (!nil_on_fail && !e) //is nil: throw instead of returning ;; virtual second
+      throw std::logic_error("query failed at: " + *it + " of: " + qry);
+
+    return e;
   }
 
 
@@ -142,7 +149,7 @@ public: //inserting
   }
   template<typename TE, typename... Args>
   static store::handle emplace(store::id const& id, Args&&... args) {
-    return insert(id, transient<TE>(std::forward<Args>(args)...)); //requires polymorphism
+    return insert(id, make_handle<TE>(std::forward<Args>(args)...)); //requires polymorphism
   }
   //alias
   static void add_alias(store::id const& alias, store::id const& existing_id) {
@@ -150,7 +157,7 @@ public: //inserting
     if (it == end())
       throw std::invalid_argument("€store: cannot alias [" + alias + "] to nonexistent id: " + existing_id);
 
-    if (find(alias) != end()) //use find to check among IDs, not only aliases
+    if (find(alias) != end()) //use find to check among IDs too, not only aliases
       throw std::invalid_argument("€store: id already used: " + alias);
 
     VAL.aliases_.emplace(alias, it);
@@ -170,6 +177,7 @@ public: //removal
     // ... cyclic references in dicts? PROBLEM
     // sadly, I must traverse it and erase dicts myself...
     flush_dicts(VAL);
+    delete_sweep(); //free queue ...
 
     std::unordered_map<store::id, handle> entities;
     std::unordered_map<handle, map_iter> iters;
@@ -178,6 +186,26 @@ public: //removal
     std::swap(iters, VAL.iters_);
     std::swap(aliases, VAL.aliases_);
     init_();
+  }
+  static handle delete_mark(handle h) {
+    VAL.delete_queue_.push_back(h);
+    return h;
+  }
+  //handles problems with references and fast dying transients
+  //does NOT solve aliases
+  // can delete something aliased from somewhere :: PROBLEM :: must be used carefully
+  // - handles will work fine, but iterators can be invalidated
+  // cannot delete aliases
+  static void delete_sweep() {
+    for (CREF h : VAL.delete_queue_) {
+      CREF it = VAL.iters_.find(h);
+      if (it != std::end(VAL.iters_)) {
+        VAL.iters_.erase(h);
+        VAL.entities_.erase(it->second);
+      }
+    }
+    std::vector<handle> empty;
+    std::swap(empty, VAL.delete_queue_);
  }
 
 public: //initialization
@@ -195,8 +223,19 @@ public: //misc
   //dangerous: can deallocate entity while still in use; only pointer is no longer referenced
   template<typename T, typename... Args>
   static handle transient(Args... args) {
+    return delete_mark(make_handle<T>(std::forward<Args>(args)...));
+  }
+private: //misc
+  template<typename T, typename... Args>
+  static handle make_handle(Args... args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
   }
+
+  static handle dict_get(entity& d, store::id const& prop);
+  static handle dict_get(handle d, store::id const& prop) {
+    return dict_get(deref(d), prop);
+  }
+  
 
 private:
   static void init_();
@@ -204,9 +243,10 @@ private:
 
 private:
   std::unordered_map<store::id, handle> entities_{};
-  std::unordered_map<handle, map_iter> iters_{}; //to get names from handles: to dump to file; and for actions
+  std::unordered_map<handle, map_iter> iters_{}; //to get names from handles: to dump to file; and for actions; and for sweep
   std::unordered_map<store::id, map_iter> aliases_{};
-  size_t unique_id_num{1}; //for creating unique ids dynamically
+  //size_t unique_id_num{1}; //for creating unique ids dynamically (...if ever needed ... ?)
+  std::vector<handle> delete_queue_{}; //handles to delete on next sweep
 
   static store VAL; //singleton object
 };
