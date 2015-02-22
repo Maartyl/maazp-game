@@ -32,7 +32,7 @@ public:
     if (it != std::end(dict_))
       return (it->second);
 
-    return{ };
+    return store::handle_of();
     //throw std::invalid_argument("€dict: not found: " + name);
   }
   //also updates
@@ -223,7 +223,8 @@ public: //entity override
 
 //for events; expected to contain 1 action that returns non-nil
 //not meant for composing actions
-class action_bag : public action, public bag {
+
+class actionbag : public action, public bag {
   //returns last non-nil ret_t or nil
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
     action::ret_t ret;
