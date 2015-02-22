@@ -129,9 +129,6 @@ public: //access
     return e;
   }
 
-
-
-
 public: //inserting 
   static store::handle insert(std::string const& id, handle entity) {
     if (entity->is_nil())
@@ -165,11 +162,7 @@ public: //inserting
 
 public: //removal
   //some flush, that would delete everything: ok
-  //deleting individual items... - someone could still hold reference -- shared pointer sort of solves... but references...
-  // but possibly... but slow: searching the whole store for references in dicts and only allow if none holds it
-  // - still problem with cyclic references ... ? (could flush deleted dicts...)
-  // making handles shared pointers should make this easier
-  //SOLUTION: delete only adds the operation to queue; queue processed in some safe moment (game loop end / ...)
+  //SOLUTION: OK: delete only adds the operation to queue; queue processed in some safe moment (game loop end / ...)
 
   ///removes everything from store
   static void flush() {
@@ -191,7 +184,8 @@ public: //removal
     VAL.delete_queue_.push_back(h);
     return h;
   }
-  //handles problems with references and fast dying transients
+  //handles problems with references and fast-dying* transients
+  // - (* shared_ptr.count == 0; but an entity& is is still being used)
   //does NOT solve aliases
   // can delete something aliased from somewhere :: PROBLEM :: must be used carefully
   // - handles will work fine, but iterators can be invalidated
