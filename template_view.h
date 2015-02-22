@@ -52,8 +52,9 @@ public:
       {"$&object", h2},
       {"$&2", h2}
     });
-    while (next_query(text, qry, pos)) {
-      //CREF ent = store::deref(qry);
+    while (next_query(text, /*out*/ qry, /*out*/ pos)) {
+      REF ent = store::deref(qry);
+      text.replace(pos, qry.size(), to_string(ent, qry));
     }
     return text;
   }
@@ -68,6 +69,15 @@ private:
       return true;
     } else return false;
   }
+  static std::string to_string(entity& e, std::string const& queryInfo) {
+    if (REF v = e.as_view())
+      return v.print(); //args?
+    if (REF v = e.as_text())
+      return v.value();
+    if (REF v = e.as_int())
+      return std::to_string(v.value());
+    throw std::logic_error("templateview: unsupported entity for query: " + queryInfo);
+  } 
 };
 
 
