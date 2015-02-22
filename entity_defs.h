@@ -255,7 +255,7 @@ class actionbag : public action, public bag {
 //sadly, can't compare handles for equality but adds flexibility
 class elink : public virtual entity {
   std::string query;
-  entity& get() {
+  entity& get() const {
     return store::deref(query);
   }
 public:
@@ -265,8 +265,8 @@ public:
   virtual dict& as_dict() {return get().as_dict();}
   virtual eint& as_int() {return get().as_int();}
   virtual text& as_text() {return get().as_text();}
-  virtual view& as_view() {return get().as_view();
-  }
+  virtual view& as_view() {return get().as_view();}
+  virtual bool is_nil() const {return get().is_nil();}
 };
 
 //allows creating temporary handles to entity references
@@ -283,6 +283,7 @@ public:
   virtual eint& as_int() {return e.as_int();}
   virtual text& as_text() {return e.as_text();}
   virtual view& as_view() {return e.as_view();}
+  virtual bool is_nil() const {return e.is_nil();}
 };
 
 
