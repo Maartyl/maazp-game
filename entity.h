@@ -20,6 +20,8 @@ class view;
 class action;
 class bag; //set of entities
 
+class elink; //for store : link to an entity
+
 typedef entity_int eint;
 
 class entity {

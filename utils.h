@@ -29,9 +29,13 @@ inline std::string operator "" _s(const char* c, size_t len) {
 #define errprn(cnt) std::cerr << cnt << std::endl
 
 //
-template<class T, class... U>
+template<typename T, typename... U>
 std::unique_ptr<T> make_unique(U&&... u) {
   return std::unique_ptr<T>(new T(std::forward<U>(u)...));
+}
+template<typename ... Args, typename R>
+std::function<R(Args...) > argless(std::function<R() > fn) {
+  return [fn](Args...) {return fn();};
 }
 
 #endif	/* UTILS_H */
