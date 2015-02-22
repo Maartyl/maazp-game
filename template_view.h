@@ -52,10 +52,9 @@ public:
       {"$&object", h2},
       {"$&2", h2}
     });
-    while (next_query(text, /*out*/ qry, /*out*/ pos)) {
-      REF ent = store::deref(qry);
-      text.replace(pos, qry.size(), to_string(ent, qry));
-    }
+    while (next_query(text, /*out*/ qry, /*out*/ pos)) 
+      text.replace(pos, qry.size(), to_string(store::deref(qry), qry));
+    
     return text;
   }
 private:
