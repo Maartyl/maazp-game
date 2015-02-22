@@ -10,6 +10,7 @@
 store store::VAL = store();
 
 #include "entity_defs.h"
+#include "store_context_frame.h"
 
 //
 entity& store::deref() {
@@ -23,7 +24,11 @@ store::handle store::dict_get(entity& dh, store::id const& prop) {
     return d.at(prop);
   else return handle_of();
 }
-
+store::handle store::find_in_context(store::id const& id) {
+  if (REF c = VAL.context_)
+    return c->find(id);
+  return handle_of();
+ }
 ///-----
 
 void store::flush_dicts(store& s) {

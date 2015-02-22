@@ -44,7 +44,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/parser.o \
 	${OBJECTDIR}/player_cmds.o \
-	${OBJECTDIR}/store.o
+	${OBJECTDIR}/store.o \
+	${OBJECTDIR}/store_context_frame.o
 
 
 # C Compiler Flags
@@ -120,6 +121,11 @@ ${OBJECTDIR}/store.o: store.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/store.o store.cpp
+
+${OBJECTDIR}/store_context_frame.o: store_context_frame.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/store_context_frame.o store_context_frame.cpp
 
 # Subprojects
 .build-subprojects:

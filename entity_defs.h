@@ -19,9 +19,14 @@
 #include "store.h"
 
 class dict : public virtual entity {
+public:
   typedef std::map<std::string, store::handle> d_map;
+private:
   d_map dict_{};
 public:
+  dict() { }
+  dict(d_map const& dm) : dict_(dm) { }
+  dict(d_map&& dm) : dict_(std::move(dm)) { }
   typedef d_map::value_type kv_pair;
   //  ///syntax helper for chaining
   //  entity& operator[](const std::string& name);
@@ -141,9 +146,9 @@ public:
 public: //"interface"
   ///transforms game state into string to show to user/player.
   ///expected to get overridden
-  virtual std::string print(entity const& subject, entity const& object) const = 0;
+  virtual std::string print(entity& subject, entity& object) const = 0;
   ///implicit subject: $player
-  std::string print(entity const& object) const {
+  std::string print(entity& object) const {
     return print(store::deref("$player"), object);
   };
   ///no object; so both implicit: $player
@@ -162,7 +167,7 @@ class textview : public text, public view {
 public:
   textview(const std::string& txt) : text(txt) { }
   textview(const std::string& txt, bool valid) : text(txt), view(valid) { }
-  virtual std::string print(const entity& subject, const entity& object) const {
+  virtual std::string print(entity& subject, entity& object) const {
     return text::value();
   }
 };
@@ -258,7 +263,24 @@ public:
   virtual dict& as_dict() {return get().as_dict();}
   virtual eint& as_int() {return get().as_int();}
   virtual text& as_text() {return get().as_text();}
-  virtual view& as_view() {return get().as_view();}
+  virtual view& as_view() {return get().as_view();
+  }
+};
+
+//allows creating temporary handles to entity references
+//only works as long as reference holds
+class eref : public virtual entity {
+  std::string query;
+  entity& e;
+public:
+  eref(entity& e) : e(e) { }
+  eref(entity* e) : e(*e) { }
+  virtual action& as_action() {return e.as_action();}
+  virtual bag& as_bag() {return e.as_bag();}
+  virtual dict& as_dict() {return e.as_dict();}
+  virtual eint& as_int() {return e.as_int();}
+  virtual text& as_text() {return e.as_text();}
+  virtual view& as_view() {return e.as_view();}
 };
 
 
@@ -279,7 +301,7 @@ public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
     return action::nil_ret;
   }
-  virtual std::string print(const entity& subject, const entity& object) const {
+  virtual std::string print(entity& subject, entity& object) const {
     return "";
   }
 

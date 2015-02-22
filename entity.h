@@ -58,6 +58,5 @@ public:
 };
 
 
-
 #endif	/* ENTITY_H */
 

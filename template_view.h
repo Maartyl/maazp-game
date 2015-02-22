@@ -9,6 +9,7 @@
 #define	TEMPLATE_VIEW_H
 
 #include "entity_defs.h" //this file is essentially part of it
+#include "store_context_frame.h"
 
 /*like text view but:
  * - can interpret special words starting with '^'
@@ -30,12 +31,42 @@
  *  - could be useful to see what's inside ...
  *  - possibly
  *
+ * + there are special names for view.print arguments:
+ *  - $&subject; $&1
+ *  - $&object;  $&2
+ *
  */
 class templateview : public textview {
+public:
   templateview(const std::string& txt) : textview(txt) { } //same constructors as textview
-  textview(const std::string& txt, bool valid) : textview(txt, valid) { }
-  virtual std::string print(const entity& subject, const entity& object) const {
-    return text::value();
+  templateview(const std::string& txt, bool valid) : textview(txt, valid) { }
+  virtual std::string print(entity& subject, entity& object) const {
+    auto text = text::value();
+    std::string qry;
+    std::string::size_type pos = std::string::npos;
+    CREF h1 = store::transient<eref>(&subject);
+    CREF h2 = store::transient<eref>(&object);
+    store_context_frame({
+      {"$&subject", h1},
+      {"$&1", h1},
+      {"$&object", h2},
+      {"$&2", h2}
+    });
+    while (next_query(text, qry, pos)) {
+      //CREF ent = store::deref(qry);
+    }
+    return text;
+  }
+private:
+  static bool next_query(std::string const& body, std::string& qry, std::string::size_type pos) {
+    auto start = body.find('^');
+    if (start != std::string::npos) {
+      auto end = body.find_first_of(parser::delims); //TODO: is this ugly? ... (parser reference ... probably not so much)
+      auto len = end == std::string::npos ? end : end - start; //not found: substr until end
+      pos = start;
+      qry = body.substr(start, len);
+      return true;
+    } else return false;
   }
 };
 

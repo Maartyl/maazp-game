@@ -21,6 +21,7 @@
 #include "actions.h"
 #include "player_cmds.h"
 #include "game.h"
+#include "template_view.h"
 
 //#define prn(cnt) std::cout << cnt << std::endl
 /*

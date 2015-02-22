@@ -9,20 +9,26 @@
 #define	STORE_H
 
 #include <unordered_map>
+#include <map>
 #include <string>
 #include <stdexcept>
 
 
 #include "entity.h"
 #include "parser.h"
+//#include "store_context_frame.h" !!! auto declared here: breaks stuff
 //#include "entity_defs.h" !!! auto declared here: breaks stuff
+
+class store_context_frame; //predefine
 
 //entity store 'singleton' ...
 //well, it's not really a singleton, but from the design of the application, I don't think it's too bad...
 //no concurrency, only little bit of modifications...; no one is gonna run 2 games simultaneously...
 //Normal object would be better but then it could not be referenced from anywhere... (Clojure var binding would be perfect, but...)
 //if necessary: would get implemented in bindings manner
+
 class store {
+  friend store_context_frame;
 public:
   typedef entity::handle handle; //~only this should be used in APIs. ~Always dereference...
   typedef std::string id; //global id (used in settings file ...)
@@ -55,6 +61,8 @@ private:
     return std::end(VAL.entities_);
   }
 
+  static handle find_in_context(store::id const& id);
+
 public: //access
   ///dereference
   static entity& deref(); //nil
@@ -81,6 +89,9 @@ public: //access
   static handle handle_direct(store::id const& id, const bool nil_on_fail/*false*/) {
     if (id[0] == '^') return query_handle(id, nil_on_fail); //actually perform query
 
+    if (auto hc = find_in_context(id))  //search context first (not in find: wrong type and semantics (aliases checks ...))
+      return hc;
+    
     auto it = find(id);
     return it != end() ? it->second : (nil_on_fail ? handle_of() : iter_err(id)->second);
   }
@@ -217,7 +228,7 @@ public: //misc
   //dangerous: can deallocate entity while still in use; only pointer is no longer referenced
   template<typename T, typename... Args>
   static handle transient(Args... args) {
-    return delete_mark(make_handle<T>(std::forward<Args>(args)...));
+    return delete_mark(make_handle<T, Args...>(std::forward<Args>(args)...));
   }
 private: //misc
   template<typename T, typename... Args>
@@ -241,6 +252,10 @@ private:
   std::unordered_map<store::id, map_iter> aliases_{};
   //size_t unique_id_num{1}; //for creating unique ids dynamically (...if ever needed ... ?)
   std::vector<handle> delete_queue_{}; //handles to delete on next sweep
+
+  //should be thread local; C++11 should work but throws error... - App is single threaded though...
+  //is self managed (RAII)
+  store_context_frame* context_{}; //context stack
 
   static store VAL; //singleton object
 };
