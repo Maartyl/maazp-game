@@ -47,6 +47,7 @@ entity_id:
 - just any string (name)
 - cannot be saved/loaded if contains '#'
 - cannot contain whitespace + comma (is considered whitespace too...) + '^' + '.'
+- cannot end in: ? ! " ' ... and special symbols generally
 - specializations: # starts with -- mainly just logical; not enforced... (probably not possible)
   '@': localizable strings (deftext)
   '#': ... no

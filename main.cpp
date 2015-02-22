@@ -158,7 +158,20 @@ I don't KNOW!!!!
   ac("q w e r");
   ac("ruka ui");
   prn("action end");
-  
+
+  templateview tv("Hello. roo is ^rampa.q.b... and I must say, ^$&2! Great.");
+  view& tvr = tv;
+  auto kk = textview("hasta la vista");
+  prn(tvr.print(kk));
+
+  //  {
+  //    store_context_frame({
+  //      {"$&1", kk}
+  //    });
+  //
+  //  }
+
+
   return 0;
 }
 
