@@ -44,7 +44,7 @@ public:
       return tran.at("&go");
       
     }
-    return store::transient<textview>("HACK; nothing in direction: " + direction);
+    return store::transient<textview>("HACK(not proper view); nothing in direction: " + direction);
   }
 };
 
