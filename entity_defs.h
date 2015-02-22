@@ -149,11 +149,13 @@ public: //"interface"
   virtual std::string print(entity& subject, entity& object) const = 0;
   ///implicit subject: $player
   std::string print(entity& object) const {
-    return print(store::deref("$player"), object);
+    //return print(store::deref("$player"), object);
+    return print(store::deref(), object);
   };
   ///no object; so both implicit: $player
   std::string print() const {
-    REF p = store::deref("$player");
+    //REF p = store::deref("$player");
+    REF p = store::deref();
     return print(p, p);
   };
 public: //entity override
