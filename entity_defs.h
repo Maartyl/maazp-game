@@ -185,6 +185,7 @@ public:
 
   //returns view in ret / or data for events...
   //main invoke to override
+  //the player argument is obsolete: possibly used in future to pass state (store) - not player
   virtual ret_t invoke(entity& player, entity const& cause, arg_coll const& args) const = 0;
   //  {
   //    throw std::logic_error("action:invoke: not overridden");
