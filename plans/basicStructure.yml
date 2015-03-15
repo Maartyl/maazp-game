@@ -89,6 +89,10 @@ needs:
 - done; relation (property) specific texts:
   - can have different text depending from where it is referenced...
   - ok: solved with location transitions - not needed anywhere else
+- context frame:
+  - needs to ask if prop is present in dict; not if it is nil
+  - otherwise cannot be changed to nil
+  - Do I want that?
   
 area:
 - transition objects:
