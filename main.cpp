@@ -166,6 +166,10 @@ I don't KNOW!!!!
   //prn(tvr.print(tv2)); //inf loop: that's correct (is 'specification' correct? ... why not...)
   prn(tvr.print(kk));
 
+
+  game g;
+  g.playLevelSimple("lvl0");
+
   return 0;
 }
 
