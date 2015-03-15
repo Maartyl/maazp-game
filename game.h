@@ -54,7 +54,7 @@ public:
       {"go", player_fns::go}
     }, "$player_commands")));
   }
-  void playLevelSimple(std::string const& lvl_name, std::istream user_input) {
+  void playLevelSimple(std::string const& lvl_name, std::istream & user_input) {
     load("levels/" + lvl_name + ".maa");
     play(user_input);
   }
