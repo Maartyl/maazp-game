@@ -39,6 +39,9 @@ public:
       {"def", with_id(defs_simple::def_dict)},
       {"defint", with_id(defs_simple::def_int)},
       {"deftext", with_id(defs_simple::def_text)},
+      {"alias", with_id(defs_simple::alias)},
+      {"aliases", with_id(defs_simple::aliases)},
+      {"copy", with_id(defs_simple::copy)},
       {"assoc", with_id(defs_simple::assoc)}
     }, "$loading_commands")));
   }

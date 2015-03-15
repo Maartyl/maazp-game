@@ -30,8 +30,8 @@
 int main(int argc, char** argv) {
   store::init();
 
-  //REF n = nil_entity::get();
-  //n.is_nil();
+  std::ifstream lvl0("levels/lvl0.maa");
+  if (!lvl0.good()) errprn("lvl0 not found");
 
   auto h = store::emplace<entity_int>("#int1", 5);
   auto h2 = store::emplace<dict>("lol");
