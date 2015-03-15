@@ -77,6 +77,9 @@ public: //access
   static entity& deref(store::id const& id)/*throw on fail*/ {
     return deref(handle_direct(id));
   }
+  static entity& deref_try(store::id const& id) {
+    return deref(id, true);
+  }
   static handle handle_of(); //nil handle
   static handle handle_of(store::id const& id)/*throw on fail*/ {
     return handle_of(id, false);
