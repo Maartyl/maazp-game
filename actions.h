@@ -22,7 +22,7 @@ public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args)const {
     //cause is unimportant ... - different ret for events?
     //args ... could mean direction, but ... different command? / special direction? ("", use arg") ...
-    REF area = store::deref("^$player.area");
+    REF area = store::deref_try("^$player.area");
     if (REF tran = area[direction].as_dict()) { //transition
       if (REF ps = store::deref(tran["*passing"].trigger(player))) {
         if (ps["?stop"]) {
@@ -172,8 +172,8 @@ public:
 class pick_up_a : public action {
   //the player argument is obsolete: possibly used in future to pass state (store) - not player
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
-    if (REF items = store::deref("^$player.area.items").as_bag()) {
-      if (REF inventory = store::deref("^$player.inventory").as_bag()) {
+    if (REF items = store::deref_try("^$player.area.items").as_bag()) {
+      if (REF inventory = store::deref_try("^$player.inventory").as_bag()) {
         if (items.find(args[0]) != std::end(items)) {
           //if already carried... - the same exact object cannot be picked up twice
           if (inventory.find(args[0]) == std::end(inventory)) {
@@ -204,14 +204,14 @@ class pick_up_a : public action {
 class drop_a : public action {
   //the player argument is obsolete: possibly used in future to pass state (store) - not player
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
-    if (REF inventory = store::deref("^$player.inventory").as_bag()) {
-      if (REF items = store::deref("^$player.area.items").as_bag()) {
+    if (REF inventory = store::deref_try("^$player.inventory").as_bag()) {
+      if (REF items = store::deref_try("^$player.area.items").as_bag()) {
         if (inventory.find(args[0]) != std::end(inventory)) {
           //if already exists there... - the same exact object cannot be 'dropped' twice
           if (items.find(args[0]) == std::end(items)) {
             inventory.erase(args[0]);
             items.insert(args[0]);
-            //do anything with aliases? - global are fine, local ... doesn't change
+            //(no): do anything with aliases? - global are fine, local ... doesn't change
             //TODO: return view 'dropped xy'
           }
         }
