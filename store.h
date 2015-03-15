@@ -16,6 +16,7 @@
 
 #include "entity.h"
 #include "parser.h"
+#include "entity_defs.h"
 //#include "store_context_frame.h" !!! auto declared here: breaks stuff
 //#include "entity_defs.h" !!! auto declared here: breaks stuff
 
@@ -44,6 +45,10 @@ private:
     return it != end() ? it : iter_err(id);
   }
   static map_iter find(store::id const& id) {
+
+    if (auto area_alias = deref(find_not_alias("$player"))["area"]["aliases"].as_dict().at(id))
+      return area_alias;
+
     auto it = find_not_alias(id);
     if (it != end()) 
       return it;
