@@ -28,7 +28,11 @@ store::handle store::find_in_context(store::id const& id) {
   if (REF c = VAL.context_)
     return c->find(id);
   return handle_of();
- }
+}
+store::handle store::find_area_alias(store::id const& id) {
+  return deref(find_not_alias("$player")->second)["area"]["aliases"].as_dict().at(id);
+}
+
 ///-----
 
 void store::flush_dicts(store& s) {

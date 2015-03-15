@@ -16,7 +16,6 @@
 
 #include "entity.h"
 #include "parser.h"
-#include "entity_defs.h"
 //#include "store_context_frame.h" !!! auto declared here: breaks stuff
 //#include "entity_defs.h" !!! auto declared here: breaks stuff
 
@@ -45,10 +44,6 @@ private:
     return it != end() ? it : iter_err(id);
   }
   static map_iter find(store::id const& id) {
-
-    if (auto area_alias = deref(find_not_alias("$player"))["area"]["aliases"].as_dict().at(id))
-      return area_alias;
-
     auto it = find_not_alias(id);
     if (it != end()) 
       return it;
@@ -67,6 +62,8 @@ private:
   }
 
   static handle find_in_context(store::id const& id);
+
+  static handle find_area_alias(store::id const& id);
 
 public: //access
   ///dereference
@@ -96,6 +93,9 @@ public: //access
 
     if (auto hc = find_in_context(id))  //search context first (not in find: wrong type and semantics (aliases checks ...))
       return hc;
+
+    if (auto area_al = find_area_alias(id))
+      return area_al;
     
     auto it = find(id);
     return it != end() ? it->second : (nil_on_fail ? handle_of() : iter_err(id)->second);
