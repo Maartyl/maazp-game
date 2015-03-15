@@ -22,7 +22,7 @@ public:
   virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args)const {
     //cause is unimportant ... - different ret for events?
     //args ... could mean direction, but ... different command? / special direction? ("", use arg") ...
-    REF area = player["area"];
+    REF area = store::deref("^$player.area");
     if (REF tran = area[direction].as_dict()) { //transition
       if (REF ps = store::deref(tran["*passing"].trigger(player))) {
         if (ps["?stop"]) {
@@ -165,6 +165,59 @@ public:
       b.erase(args[0]);
       return store::handle_of("$$"); //ok
     } else return action::nil_ret;
+  }
+};
+
+//moves item(arg0) from $player.area.items to $player.inventory
+class pick_up_a : public action {
+  //the player argument is obsolete: possibly used in future to pass state (store) - not player
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    if (REF items = store::deref("^$player.area.items").as_bag()) {
+      if (REF inventory = store::deref("^$player.inventory").as_bag()) {
+        if (items.find(args[0]) != std::end(items)) {
+          //if already carried... - the same exact object cannot be picked up twice
+          if (inventory.find(args[0]) == std::end(inventory)) {
+            items.erase(args[0]);
+            inventory.insert(args[0]);
+            //! instead of the following;
+            //Ignore aliases that point to nothing
+
+            //            if (REF als = store::deref("^$player.area.aliases").as_dict()) {
+            //              //remove all local aliases pointing to picked-up object
+            //              //TODO: but how do I keep them? ... - store elsewhere somehow...
+            //              std::vector<std::string> removes; //only a few of short strings is expected
+            //              als.for_each([&](dict::kv_pair C & kvp) { //cannot modify what I loop through
+            //                if (kvp.second == args[0]) removes.push_back(kvp.first);
+            //              });
+            //              for (CREF s : removes) als.dissoc(s);
+            //            }
+            //TODO: return view 'picked up xy'
+          }
+        }
+      }
+    }
+    return action::nil_ret;
+  }
+};
+
+//moves item(arg0) from $player.inventory to $player.area.items
+class drop_a : public action {
+  //the player argument is obsolete: possibly used in future to pass state (store) - not player
+  virtual action::ret_t invoke(entity& player, const entity& cause, const arg_coll& args) const {
+    if (REF inventory = store::deref("^$player.inventory").as_bag()) {
+      if (REF items = store::deref("^$player.area.items").as_bag()) {
+        if (inventory.find(args[0]) != std::end(inventory)) {
+          //if already exists there... - the same exact object cannot be 'dropped' twice
+          if (items.find(args[0]) == std::end(items)) {
+            inventory.erase(args[0]);
+            items.insert(args[0]);
+            //do anything with aliases? - global are fine, local ... doesn't change
+            //TODO: return view 'dropped xy'
+          }
+        }
+      }
+    }
+    return action::nil_ret;
   }
 };
 
