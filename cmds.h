@@ -19,6 +19,7 @@
 
 //#include "entity.h"
 #include "entity_defs.h"
+#include "store_context_frame.h"
 
 //common, generic commands for parser
 
@@ -68,6 +69,15 @@ public:
     hv.reserve(p.size());
     for (CREF w : p) hv.push_back(store::handle_of(w));
 
+    //cool, but hard to make consistent for every call to anything...
+    //    auto context_args = store::transient<dict>();
+    //    REF cxt = store::deref(context_args).as_dict();
+    //    cxt.assoc("$@", store::transient<text>(line));
+    //    auto arg_pos = 0;
+    //    for (CREF w : p)
+    //      cxt.assoc("$@" + arg_pos++, store::transient<text>(w));
+    //
+    //    store_context_frame cxtArgs(context_args);
     consumer(store::deref(a_).as_action().invoke(store::deref(cause_h_), hv));
   }
 private:
