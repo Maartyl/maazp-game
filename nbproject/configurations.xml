@@ -21,6 +21,9 @@
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <logicalFolder name="levels" displayName="levels" projectFiles="true">
+        <itemPath>levels/lvl0.maa</itemPath>
+      </logicalFolder>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -49,6 +52,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>levels</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="1">
@@ -84,6 +90,8 @@
       <item path="game.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="levels/lvl0.maa" ex="false" tool="3" flavor2="0">
       </item>
       <item path="loading_cmds.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -153,6 +161,8 @@
       <item path="game.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="levels/lvl0.maa" ex="false" tool="3" flavor2="0">
       </item>
       <item path="loading_cmds.cpp" ex="false" tool="1" flavor2="0">
       </item>

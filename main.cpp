@@ -30,6 +30,8 @@
 int main(int argc, char** argv) {
   store::init();
 
+  //these are just tests: (most of main)
+
   std::ifstream lvl0("levels/lvl0.maa");
   if (!lvl0.good()) errprn("lvl0 not found");
 
@@ -166,6 +168,8 @@ I don't KNOW!!!!
   //prn(tvr.print(tv2)); //inf loop: that's correct (is 'specification' correct? ... why not...)
   prn(tvr.print(kk));
 
+
+  //this is the game:
 
   game g;
   g.playLevelSimple("lvl0");

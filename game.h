@@ -51,7 +51,8 @@ public:
   }
   store::handle play(std::istream& cmds) {
     return main_loop(cmds, parser(dynamic_cmds({
-      {"go", player_fns::go}
+      {"go", player_fns::go},
+      {"#post", [](std::string C&) { store::delete_sweep(); }}
     }, "$player_commands")));
   }
   void playLevelSimple(std::string const& lvl_name, std::istream & user_input) {
@@ -80,8 +81,7 @@ private:
           cmds.emplace(kvp.first, action_cmd(kvp.second));
       });
     return cmds;
- }
-
+  }
 };
 
 #endif	/* GAME_H */
