@@ -147,12 +147,12 @@ public: //"interface"
   ///transforms game state into string to show to user/player.
   ///expected to get overridden
   virtual std::string print(entity& subject, entity& object) const = 0;
-  ///implicit subject: $player
+  ///implicit subject: nil
   std::string print(entity& object) const {
     //return print(store::deref("$player"), object);
     return print(store::deref(), object);
   };
-  ///no object; so both implicit: $player
+  ///no object; so both implicit: nil
   std::string print() const {
     //REF p = store::deref("$player");
     REF p = store::deref();

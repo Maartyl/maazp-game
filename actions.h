@@ -13,6 +13,8 @@
 #include "store.h"
 #include "entity_defs.h"
 
+#include "view_utils.h"
+
 /* ---------- basic player actions ---------- */
 
 class player_move : public action {
@@ -42,9 +44,9 @@ public:
       area["*left"].trigger(player); //use original area
       tran["*passed"].trigger(player);
       return tran.at("&go");
-      
+
     }
-    return store::transient<textview>("HACK(not proper view); nothing in direction: " + direction);
+    return bind_view(store::transient<text>(direction), store::handle_of("$&dead-direction"));
   }
 };
 

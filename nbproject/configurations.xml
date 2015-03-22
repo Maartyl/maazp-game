@@ -17,6 +17,7 @@
       <itemPath>store_context_frame.h</itemPath>
       <itemPath>template_view.h</itemPath>
       <itemPath>utils.h</itemPath>
+      <itemPath>../../../nbps/CppMaaZp/view_utils.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -69,6 +70,11 @@
           <warningLevel>2</warningLevel>
         </ccTool>
       </compileType>
+      <item path="../../../nbps/CppMaaZp/view_utils.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="actions.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="actions.h" ex="false" tool="3" flavor2="0">
@@ -140,6 +146,11 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="../../../nbps/CppMaaZp/view_utils.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="actions.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="actions.h" ex="false" tool="3" flavor2="0">

@@ -11,6 +11,7 @@ store store::VAL = store();
 
 #include "entity_defs.h"
 #include "store_context_frame.h"
+#include "loading_cmds.h"
 
 //
 entity& store::deref() {
@@ -54,6 +55,9 @@ void store::init_() {
   emplace<dict>("?event");
   emplace<dict>("?player");
   emplace<dict>("?loading");
+
+  //just some default, required views
+  defs_simple::def_view("$&dead-direction", "There is nothing in direction: ^$&1");
 }
 //entity& operator "" _sd(const char* str, std::size_t len) {
 //  return store::deref(str);

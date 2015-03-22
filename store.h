@@ -241,7 +241,7 @@ public: //misc
 private: //misc
   template<typename T, typename... Args>
   static handle make_handle(Args... args) {
-    return std::make_shared<T>(std::forward<Args>(args)...);
+    return std::make_shared<T>(std::forward<Args>(args)...); 
   }
 
   static handle dict_get(entity& d, store::id const& prop);

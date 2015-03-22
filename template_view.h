@@ -55,7 +55,7 @@ public:
     });
     while (next_query(text, /*out*/ qry, /*out*/ pos)) {
       qry = parser::trimr(qry, ".!?'\""); //sentence period / otherwise illogical
-      prn("qry: \"" << qry << "\" at: " << pos);
+      //prn("qry: \"" << qry << "\" at: " << pos);
       text.replace(pos++, qry.size(), to_string(store::deref(qry, true), qry));
     }
     
@@ -81,7 +81,7 @@ private:
     if (REF v = e.as_int())
       return std::to_string(v.value());
     throw std::logic_error("templateview: unsupported entity for query: " + queryInfo);
-  } 
+  }
 };
 
 

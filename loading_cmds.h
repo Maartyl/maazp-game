@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include "cmds.h"
+#include "template_view.h"
 
 ///simple means: can be just a function; not necessarily a functor
 
@@ -58,6 +59,12 @@ public:
   }
   static void def_text(store::id const& id, std::string const& args) {
     store::emplace<textview>(id, args);
+  }
+  static void def_view(store::id const& id, std::string const& args) {
+    store::emplace<templateview>(id, args);
+  }
+  static void def_err(store::id const& id, std::string const& args) {
+    store::emplace<templateview>(id, args, false);
   }
   static void def_int(store::id const& id, std::string const& args) {
     try {
