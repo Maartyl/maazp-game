@@ -49,8 +49,10 @@ public:
     CREF h2 = store::transient<eref>(&object);
     store_context_frame cfArgs({//frame: name required
       {"$&subject", h1},
+      {"$&s", h1},
       {"$&1", h1},
       {"$&object", h2},
+      {"$&o", h2},
       {"$&2", h2}
     });
     while (next_query(text, /*out*/ qry, /*out*/ pos)) {

@@ -41,12 +41,12 @@ public:
 
   //--actual binding
   static store::handle bind_view(store::handle subject,
-                          store::handle object,
-                          store::handle view) {
+                                 store::handle object,
+                                 store::handle view) {
     return store::transient<capture_bind>(subject, object, view);
   }
-  static store::handle bind_view(store::handle subject, store::handle view) {
-    return bind_view(subject, store::handle_of(), view);
+  static store::handle bind_view(store::handle object, store::handle view) {
+    return bind_view(store::handle_of(), object, view);
   }
 };
 //!! these are just first-level functions; because of order problems...
@@ -55,8 +55,8 @@ inline store::handle bind_view(store::handle subject,
                                store::handle view) {
   return capture_bind::bind_view(subject, object, view);
 }
-inline store::handle bind_view(store::handle subject, store::handle view) {
-  return capture_bind::bind_view(subject, view);
+inline store::handle bind_view(store::handle object, store::handle view) {
+  return capture_bind::bind_view(object, view);
 }
 
 #endif	/* VIEW_UTILS_H */

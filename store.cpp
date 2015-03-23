@@ -57,7 +57,7 @@ void store::init_() {
   emplace<dict>("?loading");
 
   //just some default, required views
-  defs_simple::def_view("$&dead-direction", "There is nothing in direction: ^$&1");
+  defs_simple::def_view("$&dead-direction", "There is nothing in direction: ^$&o");
 }
 //entity& operator "" _sd(const char* str, std::size_t len) {
 //  return store::deref(str);
